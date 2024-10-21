@@ -7,6 +7,7 @@ const Index = loadable(() => import('../pages/Index/index'));
 const Login = loadable(() => import('../pages/Login/login'));
 const History = loadable(() => import('../pages/History/history'));
 const Home = loadable(() => import('../pages/Home/home'));
+const newPerson = loadable(() => import('../pages/NewPerson/newPerson'));
 
 export default class Root extends Component {
   render() {
@@ -18,6 +19,7 @@ export default class Root extends Component {
           <Route path="/login" component={Login} />
           <Route path="/history" component={History} />
           <Route path="/home" component={Home} />
+          <Route path="/newPerson" component={newPerson} />
         </Switch>
       </HashRouter>
     );

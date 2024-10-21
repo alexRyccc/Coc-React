@@ -1,0 +1,182 @@
+.new-person-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.7); /* 半透明背景 */
+    border-radius: 10px;
+    color: #fff; /* 白色字体 */
+  }
+  
+  .new-person-container h2 {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  
+  .form-group {
+    margin-bottom: 20px;
+  }
+  
+  .form-group label {
+    display: block;
+    margin-bottom: 5px;
+  }
+  
+  .form-group input,
+  .form-group textarea {
+    width: 100%;
+    padding: 10px;
+    border-radius: 5px;
+    border: none;
+    box-sizing: border-box;
+  }
+  
+  .character-tables {
+    display: flex;
+    gap: 20px;
+  }
+  
+  .character-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+  }
+  
+  .character-table th,
+  .character-table td {
+    border: 1px solid #ccc;
+    padding: 10px;
+    text-align: left;
+  }
+  
+  .skills-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+  }
+  
+  .skills-table th,
+  .skills-table td {
+    border: 1px solid #ccc;
+    padding: 10px;
+    text-align: left;
+  }
+  
+  .skill-record,
+  .item-record,
+  .history-record {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  
+  .skill-record input,
+  .item-record input,
+  .history-record input {
+    flex: 1;
+  }
+  
+  button {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    background: #00f; /* 蓝色背景 */
+    color: #fff; /* 白色字体 */
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.3s;
+  }
+  
+  button:hover {
+    background: #0056b3; /*.new-person-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.7); /* 半透明背景 */
+    border-radius: 10px;
+    color: #fff; /* 白色字体 */
+  }
+  
+  .new-person-container h2 {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  
+  .form-group {
+    margin-bottom: 20px;
+  }
+  
+  .form-group label {
+    display: block;
+    margin-bottom: 5px;
+  }
+  
+  .form-group input,
+  .form-group textarea {
+    width: 100%;
+    padding: 10px;
+    border-radius: 5px;
+    border: none;
+    box-sizing: border-box;
+  }
+  
+  .character-tables {
+    display: flex;
+    gap: 20px;
+  }
+  
+  .character-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+  }
+  
+  .character-table th,
+  .character-table td {
+    border: 1px solid #ccc;
+    padding: 10px;
+    text-align: left;
+  }
+  
+  .skills-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+  }
+  
+  .skills-table th,
+  .skills-table td {
+    border: 1px solid #ccc;
+    padding: 10px;
+    text-align: left;
+  }
+  
+  .skill-record,
+  .item-record,
+  .history-record {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  
+  .skill-record input,
+  .item-record input,
+  .history-record input {
+    flex: 1;
+  }
+  
+  button {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    background: #00f; /* 蓝色背景 */
+    color: #fff; /* 白色字体 */
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.3s;
+  }
+  
+  button:hover {
+    background: #0056b3; 
+  }
