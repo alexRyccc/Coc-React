@@ -166,7 +166,12 @@ const sampleCharacters = [
         time: "2023-07-01",
         event: "参与剧本《爱丽丝之梦》",
       }
-    ]
+    ],
+    achievements: [
+      { title: "资深调查员", description: "在跑团中成功存活超过5次。" },
+      { title: "神秘的幸存者", description: "在一局游戏中唯一存活者。" },
+      // Add more achievements as needed
+    ],
   },
     {
       name: "李华",
@@ -335,7 +340,12 @@ const sampleCharacters = [
           time: "2023-07-01",
           event: "参与剧本《爱丽丝之梦》",
         }
-      ]
+      ],
+      achievements: [
+        { title: "资深调查员", description: "在跑团中成功存活超过5次。" },
+        { title: "神秘的幸存者", description: "在一局游戏中唯一存活者。" },
+        // Add more achievements as needed
+      ],
     },
     {
       name: "吴旭",
@@ -502,7 +512,12 @@ const sampleCharacters = [
           time: "2023-07-01",
           event: "参与剧本《爱丽丝之梦》",
         }
-      ]
+      ],
+      achievements: [
+        { title: "资深调查员", description: "在跑团中成功存活超过5次。" },
+        { title: "神秘的幸存者", description: "在一局游戏中唯一存活者。" },
+        // Add more achievements as needed
+      ],
     }
   ];
   

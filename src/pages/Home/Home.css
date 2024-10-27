@@ -12,36 +12,37 @@
 .carousel {
   display: flex;
   justify-content: center;
-  perspective: 1000px;
+  perspective: 100%;
   position: relative;
-  width: 80%;
-  height: 80%;
+  width: 100vw;
+  height: 80vh;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
 }
 
 .character-card {
-  position: absolute;
-  width: 200px;
-  height: 240px;
+  flex: 0 0 auto;
+  scroll-snap-align: center;
+  margin: 1vw;
+  width: 30vw; /* 适应屏幕宽度 */
+  height: 45vw;
   background-color: rgb(249, 255, 194);
   border: 1px solid #ccc;
   border-radius: 10px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   transform-style: preserve-3d;
   transition: transform 0.5s, z-index 0.5s, top 0.5s;
-  top: 200px; /* 下移人物框 */
-  /* background-image: url('./images/default-pattern.png');  */
 }
 
-
 .character-card.hovered {
-  top: 150px; /* 鼠标悬停时进一步下移 */
-  height: 520px;
+  top: 20vw; /* 鼠标悬停时进一步下移 */
+  height: 35vw;
 }
 
 .character-image {
   display: none;
-  width: 200px; /* 设置图片宽度 */
-  height: 260px; /* 保持图片比例 */
+  width: 10vw; /* 设置图片宽度 */
+  height: auto; /* 保持图片比例 */
 }
 
 .character-card.hovered .character-image {
@@ -67,29 +68,22 @@
   margin-right: 10px;
 }
 
-
 .overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
-  height: 100%;
+  height: 900%;
   background-color: rgba(44, 62, 80, 0.8); /* 深蓝色半透明背景 */
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
-/* .modal {
-  background-color: white;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-} */
-
 .character-details {
   margin-top: 20px;
 }
+
 .character-details {
   position: fixed;
   top: 50%;
@@ -99,10 +93,10 @@
   padding: 30px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
   z-index: 100;
-  width: 90%;
-  max-width: 1000px;
+  width: 80%;
+  max-width: 80%;
   overflow-y: auto;
-  max-height: 90%;
+  max-height: 80%;
   border-radius: 10px;
   font-size: 16px; /* 调整字体大小 */
 }
@@ -162,6 +156,7 @@
   background-color: #f9f9f9;
   text-align: left;
 }
+
 .section-separator {
   margin: 20px 0;
 }
@@ -170,10 +165,10 @@
   font-size: 14px;
 }
 
-
-.skills-table td:nth-child(1) ,.skills-table td:nth-child(4),.skills-table td:nth-child(7){
+.skills-table td:nth-child(1), .skills-table td:nth-child(4), .skills-table td:nth-child(7) {
   color: #182258; /* 蓝色 */
 }
+
 .character-tables {
   display: flex;
   justify-content: space-between;

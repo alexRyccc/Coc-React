@@ -1,0 +1,68 @@
+/* achievements.css */
+body {
+    font-family: Arial, sans-serif;
+    /* background-image: url('./images/background-image.png'); */
+    background-size: cover;
+    background-attachment: fixed;
+    margin: 0;
+    padding: 0;
+  }
+  
+  .achievements-container {
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 20px;
+    margin: 20px auto;
+    max-width: 80%;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  h2, h3 {
+    text-align: center;
+    color: #333;
+  }
+  
+  .character-selection {
+    text-align: center;
+  }
+  
+  .character-cards {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  .character-card {
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 10px;
+    margin: 10px;
+    cursor: pointer;
+    transition: transform 0.2s;
+  }
+  
+  .character-card:hover {
+    transform: scale(1.05);
+  }
+  
+  .character-details {
+    margin-top: 20px;
+  }
+  
+  .achievements-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+  }
+  
+  .achievements-table th,
+  .achievements-table td {
+    border: 1px solid #ccc;
+    padding: 8px;
+    text-align: left;
+  }
+  
+  .section-separator {
+    margin: 20px 0;
+    border-top: 1px solid #ccc;
+  }

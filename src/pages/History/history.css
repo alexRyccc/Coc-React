@@ -34,7 +34,7 @@
 }
 
 .character-selection {
-  flex: 1; /* 不固定宽度，自动调整 */
+  flex: 0.8; /* 不固定宽度，自动调整 */
   padding: 20px;
   background: rgba(0, 0, 0, 0.5); /* 添加半透明背景 */
   border-radius: 5px;
@@ -59,7 +59,7 @@
 }
 
 .selected-character {
-  flex: 2; /* 占据更多空间 */
+  flex: 4; /* 占据更多空间 */
   padding: 20px;
   background: rgba(0, 0, 0, 0.6); /* 添加背景 */
   border-radius: 5px;
@@ -72,12 +72,12 @@
 
 .timeline {
   position: relative;
-  padding-left: 40px;
+  padding-left: 5vb;
 }
 
 .vertical-line {
   position: absolute;
-  left: 20px;
+  left: 5vb;
   top: 0;
   bottom: 0;
   width: 2px;
@@ -92,7 +92,7 @@
 }
 
 .timeline-icon {
-  margin-right: 10px;
+  margin-right: 5px;
   color: #00f; /* 蓝色图标 */
 }
 
@@ -100,7 +100,7 @@
   font-weight: bold;
   margin-right: 10px;
   font-family: 'Courier New', Courier, monospace; /* 更改字体 */
-  font-size: 1.2em; /* 调整字体大小 */
+  font-size: 0.8em; /* 调整字体大小 */
 }
 
 .timeline-content {

@@ -13,7 +13,8 @@ const Sidebar = () => {
         <li onClick={() => handleNavigation('/home')} className="sidebar-button">我的人物</li>
         <li onClick={() => handleNavigation('/history')} className="sidebar-button">跑团历史</li>
         <li onClick={() => handleNavigation('/newPerson')} className="sidebar-button">新增角色</li>
-        <li onClick={() => handleNavigation('/character-learning')} className="sidebar-button">人物学习</li>
+        <li onClick={() => handleNavigation('/study')} className="sidebar-button">人物学习</li>
+        <li onClick={() => handleNavigation('/achievements')} className="sidebar-button">成就一栏</li>
       </ul>
     </div>
   );

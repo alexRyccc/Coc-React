@@ -106,4 +106,6 @@ const skillTranslations = {
     animalHandling: "驯兽",
   };
 
+
+  
   export default skillTranslations;
