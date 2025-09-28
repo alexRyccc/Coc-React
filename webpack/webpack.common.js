@@ -11,7 +11,7 @@ module.exports = {
             // babel-loader
             {
                 test: /\.(js|jsx)$/,
-                loader: ['babel-loader?cacheDirectory'],// 开启缓存
+                use: ['babel-loader?cacheDirectory'], // 开启缓存
                 include: srcPath,
                 // exclude: /node_modules/
             },

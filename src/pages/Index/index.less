@@ -1,3 +1,96 @@
+// 手机首页美化样式
+.index-mobile-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: url('./images/trpg-background.jpg') no-repeat center center/cover, linear-gradient(135deg, #e0e7ff 0%, #f0f8ff 100%);
+  padding: 0;
+}
+
+.index-card {
+  background: rgba(255,255,255,0.95);
+  border-radius: 24px;
+  box-shadow: 0 8px 32px #4a90e244;
+  padding: 32px 18px 24px 18px;
+  max-width: 360px;
+  width: 92vw;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  animation: index-card-fade-in 0.8s cubic-bezier(.77,0,.18,1);
+}
+
+.index-header {
+  font-size: 2.1rem;
+  font-weight: bold;
+  color: #4a90e2;
+  margin-bottom: 18px;
+}
+
+.index-image {
+  width: 90%;
+  max-width: 320px;
+  border-radius: 16px;
+  margin-bottom: 18px;
+  box-shadow: 0 2px 12px #4a90e222;
+}
+
+.index-description {
+  font-size: 1.1rem;
+  color: #333;
+  margin-bottom: 22px;
+}
+
+.index-login-btn {
+  font-size: 1.1rem;
+  padding: 12px 32px;
+  color: #fff;
+  background: linear-gradient(90deg,#4a90e2 0%,#5c6ac4 100%);
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 500;
+  box-shadow: 0 2px 8px #4a90e244;
+  transition: background 0.3s, transform 0.2s;
+  margin-top: 8px;
+  display: inline-block;
+  animation: index-btn-fade-in 1.2s cubic-bezier(.77,0,.18,1);
+}
+.index-login-btn:hover {
+  background: linear-gradient(90deg,#5c6ac4 0%,#4a90e2 100%);
+  transform: scale(1.05);
+}
+
+@keyframes index-card-fade-in {
+  0% { opacity: 0; transform: translateY(40px) scale(0.95); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes index-btn-fade-in {
+  0% { opacity: 0; transform: scale(0.8); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@media (max-width: 600px) {
+  .index-card {
+    padding: 18px 6px 12px 6px;
+    max-width: 98vw;
+  }
+  .index-header {
+    font-size: 1.3rem;
+  }
+  .index-image {
+    max-width: 98vw;
+    border-radius: 10px;
+  }
+  .index-description {
+    font-size: 1rem;
+  }
+  .index-login-btn {
+    font-size: 1rem;
+    padding: 10px 18px;
+  }
+}
 /* 设置页面的整体布局和配色 */
 .index-page {
     display: flex;

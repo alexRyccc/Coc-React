@@ -161,10 +161,18 @@ const sampleCharacters = [
       {
         time: "2023-05-01",
         event: "参与剧本《黑暗之夜》",
+        teams: "吴旭、陈彦宇",
+        era: "1920s",
+        ending: "黑暗笼罩大地，调查员们失去了理智，世界陷入混沌。",
+        harvest: "获得了神秘知识、理智值减少、获得了稀有道具‘黑暗之书’、结识了新盟友、解锁了新技能‘黑暗感知’。"
       },
       {
         time: "2023-07-01",
         event: "参与剧本《爱丽丝之梦》",
+        teams: "吴旭、林建",
+        era: "1920s",
+        ending: "调查员成功逃离梦境，但现实变得模糊。",
+        harvest: "获得了‘梦境碎片’、理智值减少、获得了线索‘爱丽丝的钥匙’、结识了NPC‘梦境守护者’。"
       }
     ],
     achievements: [
@@ -174,7 +182,7 @@ const sampleCharacters = [
     ],
   },
     {
-      name: "李华",
+      name: "林建",
       class: 'Archer',
       level: 4,
       profession: "医生",

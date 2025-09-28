@@ -1,3 +1,299 @@
+/* 手机端登录页弹窗和表单美化样式 */
+.login-mobile-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  background: url('./trpg-background.jpg') no-repeat center center/cover;
+  flex-direction: column;
+}
+.login-mobile-card {
+  background: rgba(255,255,255,0.97);
+  border-radius: 24px;
+  box-shadow: 0 8px 32px #4a90e244;
+  padding: 32px 18px 24px 18px;
+  max-width: 340px;
+  width: 92vw;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  animation: login-card-fade-in 0.8s cubic-bezier(.77,0,.18,1);
+}
+.login-mobile-title {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #4a90e2;
+  margin-bottom: 8px;
+}
+.login-mobile-subtitle {
+  font-size: 1rem;
+  color: #555;
+  margin-bottom: 18px;
+}
+.login-mobile-link {
+  font-size: 1.1rem;
+  padding: 12px 32px;
+  color: #fff;
+  background: linear-gradient(90deg,#4a90e2 0%,#5c6ac4 100%);
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 500;
+  box-shadow: 0 2px 8px #4a90e244;
+  transition: background 0.3s, transform 0.2s;
+  margin-top: 8px;
+  display: inline-block;
+  animation: login-btn-fade-in 1.2s cubic-bezier(.77,0,.18,1);
+}
+.login-mobile-link:hover {
+  background: linear-gradient(90deg,#5c6ac4 0%,#4a90e2 100%);
+  transform: scale(1.05);
+}
+.login-mobile-form-box {
+  width: 100%;
+  margin-top: 10px;
+}
+.login-mobile-form-title {
+  font-size: 1.3rem;
+  color: #4a90e2;
+  margin-bottom: 10px;
+}
+.login-mobile-form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.login-mobile-input {
+  font-size: 1.1rem;
+  padding: 12px 16px;
+  border-radius: 8px;
+  border: 1px solid #e0e7ff;
+  background: #f7faff;
+  margin-bottom: 4px;
+  outline: none;
+  transition: border 0.2s;
+}
+.login-mobile-input:focus {
+  border: 1.5px solid #4a90e2;
+}
+.login-mobile-btn {
+  font-size: 1.1rem;
+  padding: 12px 0;
+  color: #fff;
+  background: linear-gradient(90deg,#4a90e2 0%,#5c6ac4 100%);
+  border-radius: 8px;
+  border: none;
+  font-weight: 500;
+  box-shadow: 0 2px 8px #4a90e244;
+  transition: background 0.3s, transform 0.2s;
+  margin-top: 8px;
+  cursor: pointer;
+  animation: login-btn-fade-in 1.2s cubic-bezier(.77,0,.18,1);
+}
+.login-mobile-btn:hover {
+  background: linear-gradient(90deg,#5c6ac4 0%,#4a90e2 100%);
+  transform: scale(1.05);
+}
+.login-mobile-account-options {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 10px;
+}
+.login-mobile-account-btn {
+  font-size: 1rem;
+  padding: 8px 16px;
+  color: #4a90e2;
+  background: #e0e7ff;
+  border-radius: 8px;
+  border: none;
+  font-weight: 500;
+  box-shadow: 0 1px 4px #4a90e222;
+  transition: background 0.3s, color 0.2s;
+  cursor: pointer;
+}
+.login-mobile-account-btn:hover {
+  background: #c7d2fe;
+  color: #5c6ac4;
+}
+.login-mobile-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.45);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.login-mobile-modal-content {
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 8px 32px #1890ff44;
+  padding: 24px 18px;
+  min-width: 260px;
+  max-width: 90vw;
+  color: #333;
+  position: relative;
+  text-align: center;
+}
+.login-mobile-modal-title {
+  font-size: 1.2rem;
+  color: #4a90e2;
+  margin-bottom: 12px;
+}
+.login-mobile-modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.login-mobile-close-btn {
+  font-size: 1rem;
+  padding: 8px 16px;
+  color: #fff;
+  background: #4a90e2;
+  border-radius: 8px;
+  border: none;
+  font-weight: 500;
+  box-shadow: 0 1px 4px #4a90e222;
+  transition: background 0.3s;
+  cursor: pointer;
+}
+.login-mobile-close-btn:hover {
+  background: #5c6ac4;
+}
+@keyframes login-card-fade-in {
+  0% { opacity: 0; transform: translateY(40px) scale(0.95); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes login-btn-fade-in {
+  0% { opacity: 0; transform: scale(0.8); }
+  100% { opacity: 1; transform: scale(1); }
+}
+@media (max-width: 600px) {
+  .login-mobile-card {
+    padding: 18px 6px 12px 6px;
+    max-width: 98vw;
+  }
+  .login-mobile-title {
+    font-size: 1.3rem;
+  }
+  .login-mobile-input {
+    font-size: 1rem;
+    padding: 10px 12px;
+  }
+  .login-mobile-btn {
+    font-size: 1rem;
+    padding: 10px 0;
+  }
+  .login-mobile-modal-content {
+    min-width: 120px;
+    padding: 12px 6px;
+    border-radius: 10px;
+  }
+}
+/* 手机登录页美化样式 */
+.login-mobile-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #e0e7ff 0%, #f0f8ff 100%);
+  padding: 0;
+}
+
+.login-mobile-card {
+  background: rgba(255,255,255,0.97);
+  border-radius: 24px;
+  box-shadow: 0 8px 32px #4a90e244;
+  padding: 32px 18px 24px 18px;
+  max-width: 340px;
+  width: 92vw;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  animation: login-card-fade-in 0.8s cubic-bezier(.77,0,.18,1);
+}
+
+.login-mobile-header {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #4a90e2;
+  margin-bottom: 18px;
+}
+
+.login-mobile-form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.login-mobile-input {
+  font-size: 1.1rem;
+  padding: 12px 16px;
+  border-radius: 8px;
+  border: 1px solid #e0e7ff;
+  background: #f7faff;
+  margin-bottom: 4px;
+  outline: none;
+  transition: border 0.2s;
+}
+.login-mobile-input:focus {
+  border: 1.5px solid #4a90e2;
+}
+
+.login-mobile-btn {
+  font-size: 1.1rem;
+  padding: 12px 0;
+  color: #fff;
+  background: linear-gradient(90deg,#4a90e2 0%,#5c6ac4 100%);
+  border-radius: 8px;
+  border: none;
+  font-weight: 500;
+  box-shadow: 0 2px 8px #4a90e244;
+  transition: background 0.3s, transform 0.2s;
+  margin-top: 8px;
+  cursor: pointer;
+  animation: login-btn-fade-in 1.2s cubic-bezier(.77,0,.18,1);
+}
+.login-mobile-btn:hover {
+  background: linear-gradient(90deg,#5c6ac4 0%,#4a90e2 100%);
+  transform: scale(1.05);
+}
+
+@keyframes login-card-fade-in {
+  0% { opacity: 0; transform: translateY(40px) scale(0.95); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes login-btn-fade-in {
+  0% { opacity: 0; transform: scale(0.8); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@media (max-width: 600px) {
+  .login-mobile-card {
+    padding: 18px 6px 12px 6px;
+    max-width: 98vw;
+  }
+  .login-mobile-header {
+    font-size: 1.3rem;
+  }
+  .login-mobile-input {
+    font-size: 1rem;
+    padding: 10px 12px;
+  }
+  .login-mobile-btn {
+    font-size: 1rem;
+    padding: 10px 0;
+  }
+}
 /* 页面基础布局适应屏幕 */
 .login-container {
     display: flex;

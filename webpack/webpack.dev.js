@@ -18,11 +18,11 @@ module.exports = smart(webpackCommonConf, {
             },
             {
                 test: /\.css$/,
-                loader: ['style-loader', 'css-loader', 'postcss-loader'] // 加了 postcss
+                use: ['style-loader', 'css-loader', 'postcss-loader'] // 加了 postcss
             },
             {
                 test: /\.less$/,
-                loader: ['style-loader', 'css-loader', 'less-loader']
+                use: ['style-loader', 'css-loader', 'less-loader']
             }
         ]
     },
