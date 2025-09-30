@@ -1,5 +1,4 @@
-import React, { useState } from 'react';
-import { useSpring, animated } from 'react-spring';
+import React, { useState, useEffect } from 'react';
 import { Modal } from 'antd';
 import ReactECharts from 'echarts-for-react';
 import './Home.css';
@@ -7,7 +6,7 @@ import maleOldImage from './images/male-old.png';
 import maleYoungImage from './images/male-young.png';
 import femaleOldImage from './images/female-old.png';
 import femaleYoungImage from './images/female-young.png';
-import sampleCharacters from '../sampleCharacter';
+import { useSelector, useDispatch } from 'react-redux';
 import backgroundImage from './images/background.jpg'; 
 import Sidebar from '../Sidebar';
 import skillTranslations from '../datas/skillTranslations';
@@ -31,17 +30,19 @@ const getCharacterClass = (character) => {
 
 
 const Home = () => {
-  
-  const [rotation, setRotation] = useState(0);
-  const [selectedCharacter, setSelectedCharacter] = useState(null);
-  // 移除悬停雷达图相关状态
+  const [selectedIndex, setSelectedIndex] = useState(0);
   const [showDetail, setShowDetail] = useState(false);
   const [locale, setLocale] = useState('cn');
+  const [touchStart, setTouchStart] = useState(0);
+  const [touchEnd, setTouchEnd] = useState(0);
+  const [isAnimating, setIsAnimating] = useState(false);
+  
   // 简单加载本地语言包
   const locales = {
     cn: require('./locales/cn.json'),
     en: require('./locales/en.json'),
   };
+  
   const t = (keyPath) => {
     const keys = keyPath.split('.');
     let value = locales[locale];
@@ -51,9 +52,6 @@ const Home = () => {
     return value || keyPath;
   };
   // 属性字段本地化
-  const attributeKeys = [
-    'str', 'dex', 'int', 'con', 'app', 'pow', 'siz', 'edu', 'luck', 'hp', 'mp', 'san'
-  ];
   const attributeLabels = {
     str: t('attribute.str'),
     dex: t('attribute.dex'),
@@ -69,302 +67,761 @@ const Home = () => {
     san: t('attribute.san'),
   };
 
-  const characters = sampleCharacters; // Use sampleCharacters array
+  const user = useSelector(state => state.user);
+  const rawCharacters = useSelector(state => state.characters || []);
+  console.log('Fetched characters:', rawCharacters);
+  console.log('User state:', user);
+  
+  // 自动转换为sampleCharacters格式
+  function convertToSampleCharacter(apiCharacter) {
+    if (!apiCharacter) return null;
+    
+    const skills = {};
+    if (apiCharacter.skills) {
+      Object.entries(apiCharacter.skills).forEach(([key, value]) => {
+        if (typeof value === 'number') {
+          skills[key] = { initial: value, current: value };
+        }
+      });
+    }
+    return {
+      ...apiCharacter,
+      skills,
+      int: apiCharacter.int_ ?? apiCharacter.int,
+    };
+  }
+  
+  // 处理角色数据
+  const characters = rawCharacters && rawCharacters.length > 0
+    ? (Array.isArray(rawCharacters)
+        ? rawCharacters.map(convertToSampleCharacter).filter(Boolean)
+        : [convertToSampleCharacter(rawCharacters)].filter(Boolean))
+    : [];
+  
+  console.log('Final characters:', characters);
+  const dispatch = useDispatch();
 
-  const handleScroll = (event) => {
-    setRotation(rotation + event.deltaY * 0.2);
+  useEffect(() => {
+    // 只有在用户已登录时才获取角色
+    if (user) {
+      console.log('User logged in, fetching characters. User:', user);
+      dispatch({ type: 'FETCH_CHARACTERS' });
+    } else {
+      console.log('User not logged in');
+    }
+  }, [dispatch, user]);
+
+  // 处理触摸滑动
+  const handleTouchStart = (e) => {
+    setTouchStart(e.targetTouches[0].clientX);
   };
 
-  const handleCardClick = (character) => {
-  setSelectedCharacter(character);
-  setShowDetail(true);
+  const handleTouchMove = (e) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStart || !touchEnd || isAnimating) return;
+    
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > 50;
+    const isRightSwipe = distance < -50;
+
+    if (isLeftSwipe && selectedIndex < characters.length - 1) {
+      setIsAnimating(true);
+      setSelectedIndex(selectedIndex + 1);
+      setTimeout(() => setIsAnimating(false), 300);
+    }
+    if (isRightSwipe && selectedIndex > 0) {
+      setIsAnimating(true);
+      setSelectedIndex(selectedIndex - 1);
+      setTimeout(() => setIsAnimating(false), 300);
+    }
+    
+    setTouchStart(0);
+    setTouchEnd(0);
+  };
+
+  // 处理鼠标滚轮
+  const handleWheel = (e) => {
+    if (isAnimating) return;
+    
+    e.preventDefault();
+    const delta = e.deltaY;
+    
+    if (delta > 0 && selectedIndex < characters.length - 1) {
+      setIsAnimating(true);
+      setSelectedIndex(selectedIndex + 1);
+      setTimeout(() => setIsAnimating(false), 300);
+    } else if (delta < 0 && selectedIndex > 0) {
+      setIsAnimating(true);
+      setSelectedIndex(selectedIndex - 1);
+      setTimeout(() => setIsAnimating(false), 300);
+    }
+  };
+
+  const handleCardClick = (index) => {
+    if (index === selectedIndex) {
+      setShowDetail(true);
+    } else {
+      if (!isAnimating) {
+        setIsAnimating(true);
+        setSelectedIndex(index);
+        setTimeout(() => setIsAnimating(false), 300);
+      }
+    }
   };
 
   const handleClose = () => {
     setShowDetail(false);
-    setSelectedCharacter(null);
   };
 
-  // 移除悬停雷达图相关事件
-
   return (
-    <div style={{ minHeight: '100vh', background: '#f5f6fa', position: 'relative' }}>
-      <Sidebar />
-      {/* Header with language switch */}
-      <div style={{ width: '100%', background: '#fff', boxShadow: '0 2px 8px rgba(0,0,0,0.04)', padding: '12px 0 8px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 100 }}>
-        <div style={{ fontSize: 22, fontWeight: 600, marginLeft: 16 }}>{t('header.title')}</div>
-        <button
-          style={{ marginRight: 16, padding: '6px 16px', fontSize: 15, background: '#1890ff', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer' }}
-          onClick={() => setLocale(locale === 'cn' ? 'en' : 'cn')}
-        >{t('header.switchLang')}</button>
-      </div>
-      <div className="character-container" onWheel={handleScroll} style={{ backgroundImage: `url(${backgroundImage})`, backgroundSize: 'cover', minHeight: '100vh', padding: '12px 0', position: 'relative', zIndex: 1 }}>
-        <div className="carousel" style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-          gap: 24,
-          justifyContent: 'center',
-          alignItems: 'stretch',
-          position: 'relative',
-          zIndex: 1,
-          padding: '8px',
+    <div style={{ 
+      minHeight: '100vh', 
+      position: 'relative', 
+      overflow: 'hidden',
+      backgroundImage: `url(${backgroundImage})`,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      backgroundRepeat: 'no-repeat'
+    }}>
+      {/* 背景遮罩 */}
+      <div style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.8) 0%, rgba(118, 75, 162, 0.8) 100%)',
+        zIndex: 1
+      }} />
+      
+      <div style={{ position: 'relative', zIndex: 2 }}>
+        <Sidebar />
+        
+        {/* Header */}
+        <div style={{ 
+          width: '100%', 
+          background: 'rgba(255,255,255,0.95)', 
+          backdropFilter: 'blur(10px)',
+          boxShadow: '0 2px 20px rgba(0,0,0,0.1)', 
+          padding: '15px 0', 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'space-between', 
+          position: 'sticky', 
+          top: 0, 
+          zIndex: 100 
         }}>
-          {characters.map((character, index) => {
-            const characterClass = getCharacterClass(character);
-            // 已移除 hoveredCharacter，卡片不再有悬停动画
-            const isHovered = false;
-            // 分离 spring 动画类型，避免混用
-            const scaleSpring = useSpring({
-              transform: isHovered ? 'scale(1.04)' : 'scale(1)',
-              config: { tension: 300, friction: 20 },
-            });
-            // boxShadow、border 直接用 style 切换，不做 spring 动画
-            const avatarSpring = useSpring({
-              opacity: isHovered ? 1 : 0.95,
-            });
-            return (
-              <animated.div
-                key={index}
-                className={`character-card ${characterClass} ${isHovered ? 'hovered' : ''}`}
+        <div style={{ fontSize: 24, fontWeight: 700, marginLeft: 20, color: '#333' }}>
+          {t('header.title')}
+        </div>
+        <div style={{ display: 'flex', gap: '10px', marginRight: 20 }}>
+          <button
+            style={{ 
+              padding: '8px 16px', 
+              fontSize: 14, 
+              background: 'linear-gradient(135deg, #28a745 0%, #20c997 100%)', 
+              color: '#fff', 
+              border: 'none', 
+              borderRadius: 20, 
+              cursor: 'pointer',
+              boxShadow: '0 2px 10px rgba(40, 167, 69, 0.4)',
+              transition: 'all 0.3s ease'
+            }}
+            onClick={() => {
+              console.log('Manual fetch characters clicked');
+              dispatch({ type: 'FETCH_CHARACTERS' });
+            }}
+          >
+            刷新角色
+          </button>
+          <button
+            style={{ 
+              padding: '8px 20px', 
+              fontSize: 16, 
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', 
+              color: '#fff', 
+              border: 'none', 
+              borderRadius: 25, 
+              cursor: 'pointer',
+              boxShadow: '0 4px 15px rgba(102, 126, 234, 0.4)',
+              transition: 'all 0.3s ease'
+            }}
+            onClick={() => setLocale(locale === 'cn' ? 'en' : 'cn')}
+            onMouseEnter={(e) => {
+              e.target.style.transform = 'translateY(-2px)';
+              e.target.style.boxShadow = '0 6px 20px rgba(102, 126, 234, 0.6)';
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.transform = 'translateY(0)';
+              e.target.style.boxShadow = '0 4px 15px rgba(102, 126, 234, 0.4)';
+            }}
+          >
+            {t('header.switchLang')}
+          </button>
+        </div>
+      </div>
+
+      {/* 卡片容器 */}
+      <div 
+        className="cards-container"
+        style={{ 
+          height: 'calc(100vh - 80px)', 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center',
+          position: 'relative',
+          padding: '20px',
+          perspective: '1000px'
+        }}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        onWheel={handleWheel}
+      >
+        {characters.length === 0 ? (
+          // 空状态显示
+          <div style={{
+            textAlign: 'center',
+            color: 'rgba(255,255,255,0.9)',
+            background: 'rgba(255,255,255,0.1)',
+            backdropFilter: 'blur(10px)',
+            padding: '40px',
+            borderRadius: '20px',
+            border: '1px solid rgba(255,255,255,0.2)'
+          }}>
+            <div style={{ fontSize: '48px', marginBottom: '20px' }}>📝</div>
+            <h3 style={{ margin: '0 0 10px 0', fontSize: '24px' }}>暂无角色数据</h3>
+            <p style={{ margin: '0 0 20px 0', color: 'rgba(255,255,255,0.7)' }}>
+              {user ? '请点击上方"刷新角色"按钮获取角色数据，或创建新角色' : '请先登录以查看您的角色'}
+            </p>
+            {user && (
+              <button
                 style={{
-                  ...scaleSpring,
-                  width: '100%',
-                  maxWidth: 400,
-                  background: 'linear-gradient(135deg, #e3f0ff 0%, #fff 100%)',
-                  borderRadius: 20,
-                  margin: '0 auto',
-                  padding: 18,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  position: 'relative',
-                  transition: 'box-shadow 0.2s',
+                  padding: '12px 24px',
+                  fontSize: '16px',
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: '25px',
                   cursor: 'pointer',
-                  boxShadow: isHovered ? '0 6px 32px rgba(24,144,255,0.18)' : '0 2px 12px rgba(0,0,0,0.08)',
-                  border: isHovered ? '2px solid #1890ff' : '2px solid transparent',
+                  fontWeight: '600',
+                  transition: 'all 0.3s ease',
+                  boxShadow: '0 4px 15px rgba(102, 126, 234, 0.4)'
                 }}
-                // 移除悬停事件
-                onClick={() => handleCardClick(character)}
+                onClick={() => {
+                  console.log('Refresh button clicked from empty state');
+                  dispatch({ type: 'FETCH_CHARACTERS' });
+                }}
               >
-                {/* 头像放在名字正上方，确保图片路径和样式正确 */}
-                <animated.div style={{
-                  ...avatarSpring,
-                  width: 110,
-                  height: 110,
-                  marginBottom: 10,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
+                刷新角色数据
+              </button>
+            )}
+          </div>
+        ) : (
+          // 角色卡片
+          <>
+        {characters.map((character, index) => {
+          const offset = index - selectedIndex;
+          const isSelected = index === selectedIndex;
+          
+          // 计算卡片的位置和角度，让其他卡片更明显地露出边边
+          const translateX = offset * 50; // 增加横向间距
+          const translateY = Math.abs(offset) * 10; // 添加纵向偏移
+          const rotateY = offset * 10; // 减少旋转角度
+          const scale = isSelected ? 1 : 0.9; // 稍微调整缩放比例
+          const zIndex = isSelected ? 20 : 20 - Math.abs(offset);
+          
+          return (
+            <div
+              key={index}
+              className={`character-card ${isSelected ? 'selected' : ''} ${isAnimating ? 'animating' : ''}`}
+              style={{
+                position: 'absolute',
+                width: '300px',
+                height: '480px',
+                background: 'linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.85) 100%)',
+                borderRadius: '20px',
+                boxShadow: isSelected 
+                  ? '0 25px 50px rgba(0,0,0,0.4), 0 0 0 3px rgba(102, 126, 234, 0.6)' 
+                  : `0 ${15 + Math.abs(offset) * 5}px ${30 + Math.abs(offset) * 10}px rgba(0,0,0,0.3)`,
+                transform: `
+                  translateX(${translateX}px) 
+                  translateY(${translateY}px)
+                  translateZ(${isSelected ? 0 : -Math.abs(offset) * 80}px)
+                  rotateY(${rotateY}deg)
+                  scale(${scale})
+                `,
+                opacity: Math.abs(offset) > 3 ? 0 : 1 - Math.abs(offset) * 0.1,
+                transition: isAnimating 
+                  ? 'all 0.4s cubic-bezier(0.4, 0.0, 0.2, 1)' 
+                  : 'all 0.6s cubic-bezier(0.4, 0.0, 0.2, 1)',
+                cursor: 'pointer',
+                zIndex: zIndex,
+                backdropFilter: 'blur(10px)',
+                border: isSelected 
+                  ? '2px solid rgba(102, 126, 234, 0.8)' 
+                  : '1px solid rgba(255,255,255,0.3)',
+                padding: '25px',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center'
+              }}
+              onClick={() => handleCardClick(index)}
+            >
+              {/* 头像 */}
+              <div style={{
+                width: '100px',
+                height: '100px',
+                borderRadius: '50%',
+                overflow: 'hidden',
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                padding: '3px',
+                marginBottom: '15px',
+                boxShadow: '0 8px 25px rgba(102, 126, 234, 0.3)'
+              }}>
+                <div style={{
+                  width: '100%',
+                  height: '100%',
                   borderRadius: '50%',
                   overflow: 'hidden',
-                  background: isHovered ? 'linear-gradient(135deg,#bae7ff 0%,#e6f7ff 100%)' : '#eee',
-                  boxShadow: isHovered ? '0 0 0 4px #1890ff33' : 'none',
-                  transition: 'background 0.2s',
+                  background: '#fff'
                 }}>
                   <img
                     src={getCharacterImage(character)}
-                    alt={character.name ? `${character.name}头像` : '角色头像'}
-                    className="character-image"
-                    style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-                  />
-                </animated.div>
-                <div
-                  className={`character-info character-info-${character.name.replace(/\s+/g, '').toLowerCase()}`}
-                  style={{ width: '100%', textAlign: 'center', marginBottom: 8, fontSize: 16 }}
-                >
-                  <h3 style={{ fontSize: 22, margin: '4px 0', fontWeight: 700, color: '#1890ff' }}>{character.name}</h3>
-                  <div style={{ display: 'flex', justifyContent: 'space-around', fontSize: 15, marginBottom: 8 }}>
-                    <span>{t('character.age')}: {character.age}</span>
-                    <span>{t('character.gender')}: {character.gender}</span>
-                  </div>
-                  <div style={{ fontSize: 15, marginBottom: 8, color: '#555' }}>{t('character.profession')}: {character.profession}</div>
-                </div>
-                {/* 雷达图直接显示在卡片中 */}
-                <div style={{ width: '100%', marginBottom: 8 }}>
-                  <ReactECharts
-                    style={{ height: 220, width: '100%' }}
-                    option={{
-                      tooltip: {},
-                      radar: {
-                        indicator: [
-                          { name: t('attribute.str'), max: 100 },
-                          { name: t('attribute.dex'), max: 100 },
-                          { name: t('attribute.int'), max: 100 },
-                          { name: t('attribute.con'), max: 100 },
-                          { name: t('attribute.app'), max: 100 },
-                          { name: t('attribute.pow'), max: 100 },
-                          { name: t('attribute.siz'), max: 100 },
-                          { name: t('attribute.edu'), max: 100 },
-                          { name: t('attribute.luck'), max: 100 },
-                        ],
-                        shape: 'circle',
-                        splitNumber: 5,
-                        axisName: {
-                          color: '#333',
-                          fontWeight: 'bold',
-                          fontSize: 13,
-                          formatter: function(value, indicator) {
-                            const values = [
-                              character.str,
-                              character.dex,
-                              character.int,
-                              character.con,
-                              character.app,
-                              character.pow,
-                              character.siz,
-                              character.edu,
-                              character.luck,
-                            ];
-                            const names = [
-                              t('attribute.str'),
-                              t('attribute.dex'),
-                              t('attribute.int'),
-                              t('attribute.con'),
-                              t('attribute.app'),
-                              t('attribute.pow'),
-                              t('attribute.siz'),
-                              t('attribute.edu'),
-                              t('attribute.luck'),
-                            ];
-                            const idx = names.indexOf(value);
-                            return `${value}\n${values[idx]}`;
-                          }
-                        },
-                      },
-                      series: [{
-                        type: 'radar',
-                        data: [
-                          {
-                            value: [
-                              character.str,
-                              character.dex,
-                              character.int,
-                              character.con,
-                              character.app,
-                              character.pow,
-                              character.siz,
-                              character.edu,
-                              character.luck,
-                            ],
-                            name: character.name,
-                            areaStyle: { opacity: 0.2 },
-                            lineStyle: { width: 3 },
-                            symbol: 'circle',
-                            itemStyle: { color: '#1890ff' },
-                          },
-                        ],
-                      }],
+                    alt={`${character.name}头像`}
+                    style={{ 
+                      width: '100%', 
+                      height: '100%', 
+                      objectFit: 'cover'
                     }}
                   />
                 </div>
+              </div>
+
+              {/* 角色信息 */}
+              <div style={{ textAlign: 'center', marginBottom: '20px', width: '100%' }}>
+                <h3 style={{ 
+                  fontSize: '24px', 
+                  margin: '0 0 10px 0', 
+                  fontWeight: '700', 
+                  color: '#333',
+                  textShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                }}>
+                  {character.name}
+                </h3>
+                <div style={{ 
+                  display: 'flex', 
+                  justifyContent: 'space-between', 
+                  fontSize: '14px', 
+                  color: '#666',
+                  marginBottom: '8px',
+                  padding: '0 10px'
+                }}>
+                  <span>{t('character.age')}: {character.age}</span>
+                  <span>{t('character.gender')}: {character.gender}</span>
+                </div>
+                <div style={{ 
+                  fontSize: '14px', 
+                  color: '#888',
+                  fontStyle: 'italic'
+                }}>
+                  {character.profession}
+                </div>
+              </div>
+
+              {/* 雷达图 */}
+              <div style={{ 
+                width: '100%', 
+                height: '200px',
+                marginBottom: '15px',
+                transform: 'translateY(-10px)' // 向上移动雷达图避免重叠
+              }}>
+                <ReactECharts
+                  style={{ height: '100%', width: '100%' }}
+                  option={{
+                    tooltip: {
+                      trigger: 'item'
+                    },
+                    radar: {
+                      indicator: [
+                        { name: t('attribute.str'), max: 100 },
+                        { name: t('attribute.dex'), max: 100 },
+                        { name: t('attribute.int'), max: 100 },
+                        { name: t('attribute.con'), max: 100 },
+                        { name: t('attribute.app'), max: 100 },
+                        { name: t('attribute.pow'), max: 100 },
+                        { name: t('attribute.siz'), max: 100 },
+                        { name: t('attribute.edu'), max: 100 },
+                        { name: t('attribute.luck'), max: 100 },
+                      ],
+                      shape: 'circle',
+                      splitNumber: 4,
+                      radius: '70%',
+                      axisName: {
+                        color: '#555',
+                        fontWeight: '600',
+                        fontSize: 11
+                      },
+                      splitLine: {
+                        lineStyle: {
+                          color: 'rgba(102, 126, 234, 0.2)'
+                        }
+                      },
+                      splitArea: {
+                        show: true,
+                        areaStyle: {
+                          color: ['rgba(102, 126, 234, 0.05)', 'rgba(102, 126, 234, 0.1)']
+                        }
+                      }
+                    },
+                    series: [{
+                      type: 'radar',
+                      data: [{
+                        value: [
+                          character.str, character.dex, character.int,
+                          character.con, character.app, character.pow,
+                          character.siz, character.edu, character.luck,
+                        ],
+                        name: character.name,
+                        areaStyle: { 
+                          opacity: 0.3,
+                          color: 'rgba(102, 126, 234, 0.3)'
+                        },
+                        lineStyle: { 
+                          width: 2,
+                          color: '#667eea'
+                        },
+                        symbol: 'circle',
+                        symbolSize: 6,
+                        itemStyle: { 
+                          color: '#667eea',
+                          shadowColor: 'rgba(102, 126, 234, 0.5)',
+                          shadowBlur: 10
+                        }
+                      }]
+                    }]
+                  }}
+                />
+              </div>
+
+              {/* 查看详情按钮 */}
+              {isSelected && (
                 <button
                   style={{
-                    marginTop: 4,
-                    padding: '10px 0',
                     width: '100%',
-                    fontSize: 16,
-                    background: isHovered ? 'linear-gradient(90deg,#1890ff 0%,#40a9ff 100%)' : '#1890ff',
+                    padding: '12px 0',
+                    fontSize: '16px',
+                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                     color: '#fff',
                     border: 'none',
-                    borderRadius: 8,
+                    borderRadius: '25px',
                     cursor: 'pointer',
-                    fontWeight: 500,
-                    letterSpacing: 1,
-                    boxShadow: isHovered ? '0 2px 12px #1890ff44' : 'none',
-                    transition: 'background 0.2s',
+                    fontWeight: '600',
+                    letterSpacing: '1px',
+                    transition: 'all 0.3s ease',
+                    boxShadow: '0 4px 15px rgba(102, 126, 234, 0.4)',
+                    animation: 'fadeInUp 0.5s ease'
                   }}
-                  onClick={() => {
-                    setSelectedCharacter(character);
+                  onMouseEnter={(e) => {
+                    e.target.style.transform = 'translateY(-2px)';
+                    e.target.style.boxShadow = '0 6px 20px rgba(102, 126, 234, 0.6)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.transform = 'translateY(0)';
+                    e.target.style.boxShadow = '0 4px 15px rgba(102, 126, 234, 0.4)';
+                  }}
+                  onClick={(e) => {
+                    e.stopPropagation();
                     setShowDetail(true);
                   }}
-                >{t('button.viewDetail')}</button>
-              </animated.div>
-            );
-          })}
+                >
+                  {t('button.viewDetail')}
+                </button>
+              )}
+            </div>
+          );
+        })}
+
+        {/* 导航指示器 */}
+        <div style={{
+          position: 'absolute',
+          bottom: '30px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          display: 'flex',
+          gap: '10px',
+          zIndex: 20
+        }}>
+          {characters.map((_, index) => (
+            <div
+              key={index}
+              style={{
+                width: index === selectedIndex ? '20px' : '8px',
+                height: '8px',
+                borderRadius: '4px',
+                background: index === selectedIndex 
+                  ? 'rgba(255,255,255,0.9)' 
+                  : 'rgba(255,255,255,0.4)',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                boxShadow: index === selectedIndex 
+                  ? '0 2px 8px rgba(255,255,255,0.3)' 
+                  : 'none'
+              }}
+              onClick={() => {
+                if (!isAnimating) {
+                  setIsAnimating(true);
+                  setSelectedIndex(index);
+                  setTimeout(() => setIsAnimating(false), 400);
+                }
+              }}
+            />
+          ))}
         </div>
-        {/* 原有弹窗内容 */}
-        {showDetail && selectedCharacter && (
-          <div className="overlay" onClick={handleClose} style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }}>
-            <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 400, width: '95vw', maxHeight: '90vh', borderRadius: 16, padding: 0, background: '#fff', boxShadow: '0 4px 24px rgba(0,0,0,0.15)', zIndex: 10000, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-              <div style={{ flex: 1, overflowY: 'auto', padding: 16, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <img src={getCharacterImage(selectedCharacter)} alt={`${selectedCharacter.name}${t('character.image')}`} style={{ width: 90, borderRadius: '50%', marginBottom: 10 }} />
-                <h2 style={{ fontSize: 22, margin: '8px 0' }}>{selectedCharacter.name}</h2>
-                <div style={{ fontSize: 16, marginBottom: 8 }}>{t('character.profession')}: {selectedCharacter.profession} | {t('character.gender')}: {selectedCharacter.gender} | {t('character.age')}: {selectedCharacter.age}</div>
-                <div style={{ width: '100%', marginBottom: 12, overflowX: 'auto' }}>
-                  <table style={{ width: '100%', fontSize: 15, marginBottom: 8 }}>
-                    <tbody>
-                      <tr>
-                        <th style={{ width: 60 }}>{attributeLabels.str}</th><td>{selectedCharacter.str}</td>
-                        <th style={{ width: 60 }}>{attributeLabels.dex}</th><td>{selectedCharacter.dex}</td>
-                      </tr>
-                      <tr>
-                        <th>{attributeLabels.int}</th><td>{selectedCharacter.int}</td>
-                        <th>{attributeLabels.con}</th><td>{selectedCharacter.con}</td>
-                      </tr>
-                      <tr>
-                        <th>{attributeLabels.app}</th><td>{selectedCharacter.app}</td>
-                        <th>{attributeLabels.pow}</th><td>{selectedCharacter.pow}</td>
-                      </tr>
-                      <tr>
-                        <th>{attributeLabels.siz}</th><td>{selectedCharacter.siz}</td>
-                        <th>{attributeLabels.edu}</th><td>{selectedCharacter.edu}</td>
-                      </tr>
-                      <tr>
-                        <th>{attributeLabels.luck}</th><td>{selectedCharacter.luck}</td>
-                        <th>{attributeLabels.hp}</th><td>{selectedCharacter.hp}</td>
-                      </tr>
-                      <tr>
-                        <th>{attributeLabels.mp}</th><td>{selectedCharacter.mp}</td>
-                        <th>{attributeLabels.san}</th><td>{selectedCharacter.san}</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-                <div style={{ width: '100%', marginBottom: 12 }}>
-                  <h3 style={{ fontSize: 17, margin: '8px 0' }}>{t('modal.skillList')}</h3>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                    {Object.entries(selectedCharacter.skills).map(([skill, values]) => (
-                      <div key={skill} style={{ background: '#f5f5f5', borderRadius: 8, padding: '4px 8px', fontSize: 14 }}>
-                        <span>{t(`skill.${skill}`)}: </span>
-                        <span style={{ color: '#1890ff' }}>{values.current}</span>
-                        <span style={{ color: '#aaa', marginLeft: 4 }}>({values.initial})</span>
+        </>
+        )}
+      </div>
+
+      {/* 详情弹窗 */}
+      {showDetail && characters[selectedIndex] && (
+        <div 
+          className="overlay" 
+          onClick={handleClose} 
+          style={{ 
+            position: 'fixed', 
+            top: 0, 
+            left: 0, 
+            width: '100vw', 
+            height: '100vh', 
+            background: 'rgba(0,0,0,0.6)', 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center', 
+            zIndex: 9999,
+            backdropFilter: 'blur(5px)'
+          }}
+        >
+          <div 
+            className="modal" 
+            onClick={(e) => e.stopPropagation()} 
+            style={{ 
+              maxWidth: '400px', 
+              width: '95vw', 
+              maxHeight: '90vh', 
+              borderRadius: '20px', 
+              padding: 0, 
+              background: 'rgba(255,255,255,0.95)', 
+              backdropFilter: 'blur(20px)',
+              boxShadow: '0 20px 60px rgba(0,0,0,0.3)', 
+              zIndex: 10000, 
+              overflow: 'hidden', 
+              display: 'flex', 
+              flexDirection: 'column',
+              border: '1px solid rgba(255,255,255,0.3)'
+            }}
+          >
+            <div style={{ 
+              flex: 1, 
+              overflowY: 'auto', 
+              padding: '25px', 
+              display: 'flex', 
+              flexDirection: 'column', 
+              alignItems: 'center' 
+            }}>
+              <img 
+                src={getCharacterImage(characters[selectedIndex])} 
+                alt={`${characters[selectedIndex].name}头像`} 
+                style={{ 
+                  width: '100px', 
+                  height: '100px',
+                  borderRadius: '50%', 
+                  marginBottom: '15px',
+                  border: '3px solid rgba(102, 126, 234, 0.3)',
+                  boxShadow: '0 8px 25px rgba(102, 126, 234, 0.3)'
+                }} 
+              />
+              <h2 style={{ 
+                fontSize: '26px', 
+                margin: '10px 0',
+                color: '#333',
+                fontWeight: '700'
+              }}>
+                {characters[selectedIndex].name}
+              </h2>
+              <div style={{ 
+                fontSize: '16px', 
+                marginBottom: '20px',
+                color: '#666',
+                textAlign: 'center'
+              }}>
+                {characters[selectedIndex].profession} | {characters[selectedIndex].gender} | {characters[selectedIndex].age}岁
+              </div>
+              
+              {/* 属性表格 */}
+              <div style={{ width: '100%', marginBottom: '20px' }}>
+                <table style={{ 
+                  width: '100%', 
+                  fontSize: '14px', 
+                  borderCollapse: 'collapse',
+                  background: 'rgba(255,255,255,0.5)',
+                  borderRadius: '10px',
+                  overflow: 'hidden'
+                }}>
+                  <tbody>
+                    <tr>
+                      <th style={{ 
+                        padding: '8px', 
+                        background: 'rgba(102, 126, 234, 0.1)',
+                        color: '#333',
+                        fontWeight: '600'
+                      }}>{attributeLabels.str}</th>
+                      <td style={{ padding: '8px', textAlign: 'center' }}>{characters[selectedIndex].str}</td>
+                      <th style={{ 
+                        padding: '8px', 
+                        background: 'rgba(102, 126, 234, 0.1)',
+                        color: '#333',
+                        fontWeight: '600'
+                      }}>{attributeLabels.dex}</th>
+                      <td style={{ padding: '8px', textAlign: 'center' }}>{characters[selectedIndex].dex}</td>
+                    </tr>
+                    <tr>
+                      <th style={{ 
+                        padding: '8px', 
+                        background: 'rgba(102, 126, 234, 0.1)',
+                        color: '#333',
+                        fontWeight: '600'
+                      }}>{attributeLabels.int}</th>
+                      <td style={{ padding: '8px', textAlign: 'center' }}>{characters[selectedIndex].int}</td>
+                      <th style={{ 
+                        padding: '8px', 
+                        background: 'rgba(102, 126, 234, 0.1)',
+                        color: '#333',
+                        fontWeight: '600'
+                      }}>{attributeLabels.con}</th>
+                      <td style={{ padding: '8px', textAlign: 'center' }}>{characters[selectedIndex].con}</td>
+                    </tr>
+                    <tr>
+                      <th style={{ 
+                        padding: '8px', 
+                        background: 'rgba(102, 126, 234, 0.1)',
+                        color: '#333',
+                        fontWeight: '600'
+                      }}>{attributeLabels.app}</th>
+                      <td style={{ padding: '8px', textAlign: 'center' }}>{characters[selectedIndex].app}</td>
+                      <th style={{ 
+                        padding: '8px', 
+                        background: 'rgba(102, 126, 234, 0.1)',
+                        color: '#333',
+                        fontWeight: '600'
+                      }}>{attributeLabels.pow}</th>
+                      <td style={{ padding: '8px', textAlign: 'center' }}>{characters[selectedIndex].pow}</td>
+                    </tr>
+                    <tr>
+                      <th style={{ 
+                        padding: '8px', 
+                        background: 'rgba(102, 126, 234, 0.1)',
+                        color: '#333',
+                        fontWeight: '600'
+                      }}>{attributeLabels.siz}</th>
+                      <td style={{ padding: '8px', textAlign: 'center' }}>{characters[selectedIndex].siz}</td>
+                      <th style={{ 
+                        padding: '8px', 
+                        background: 'rgba(102, 126, 234, 0.1)',
+                        color: '#333',
+                        fontWeight: '600'
+                      }}>{attributeLabels.edu}</th>
+                      <td style={{ padding: '8px', textAlign: 'center' }}>{characters[selectedIndex].edu}</td>
+                    </tr>
+                    <tr>
+                      <th style={{ 
+                        padding: '8px', 
+                        background: 'rgba(102, 126, 234, 0.1)',
+                        color: '#333',
+                        fontWeight: '600'
+                      }}>{attributeLabels.luck}</th>
+                      <td style={{ padding: '8px', textAlign: 'center' }}>{characters[selectedIndex].luck}</td>
+                      <th style={{ 
+                        padding: '8px', 
+                        background: 'rgba(102, 126, 234, 0.1)',
+                        color: '#333',
+                        fontWeight: '600'
+                      }}>{attributeLabels.hp}</th>
+                      <td style={{ padding: '8px', textAlign: 'center' }}>{characters[selectedIndex].hp}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              {/* 技能列表 */}
+              {characters[selectedIndex].skills && (
+                <div style={{ width: '100%', marginBottom: '20px' }}>
+                  <h3 style={{ 
+                    fontSize: '18px', 
+                    margin: '0 0 15px 0',
+                    color: '#333',
+                    fontWeight: '600'
+                  }}>
+                    {t('modal.skillList')}
+                  </h3>
+                  <div style={{ 
+                    display: 'flex', 
+                    flexWrap: 'wrap', 
+                    gap: '8px' 
+                  }}>
+                    {Object.entries(characters[selectedIndex].skills).map(([skill, values]) => (
+                      <div 
+                        key={skill} 
+                        style={{ 
+                          background: 'rgba(102, 126, 234, 0.1)', 
+                          borderRadius: '15px', 
+                          padding: '6px 12px', 
+                          fontSize: '13px',
+                          border: '1px solid rgba(102, 126, 234, 0.2)'
+                        }}
+                      >
+                        <span style={{ fontWeight: '600' }}>{t(`skill.${skill}`)}: </span>
+                        <span style={{ color: '#667eea' }}>{values.current}</span>
                       </div>
                     ))}
                   </div>
                 </div>
-                <div style={{ width: '100%', marginBottom: 12 }}>
-                  <h3 style={{ fontSize: 17, margin: '8px 0' }}>{t('modal.backgroundStory')}</h3>
-                  <div style={{ fontSize: 14, color: '#555', lineHeight: 1.6 }}>
-                    <div><b>{t('modal.personalDescription')}：</b>{selectedCharacter.background.personalDescription}</div>
-                    <div><b>{t('modal.ideologyBeliefs')}：</b>{selectedCharacter.background.ideologyBeliefs}</div>
-                    <div><b>{t('modal.significantPeople')}：</b>{selectedCharacter.background.significantPeople}</div>
-                    <div><b>{t('modal.importantLocations')}：</b>{selectedCharacter.background.importantLocations}</div>
-                    <div><b>{t('modal.treasuredPossessions')}：</b>{selectedCharacter.background.treasuredPossessions}</div>
-                  </div>
-                </div>
-                <div style={{ width: '100%', marginBottom: 12 }}>
-                  <h3 style={{ fontSize: 17, margin: '8px 0' }}>{t('modal.items')}</h3>
-                  <div style={{ fontSize: 14, color: '#555', lineHeight: 1.6 }}>
-                    <div>{t('modal.item1')}</div>
-                    <div>{t('modal.item2')}</div>
-                    <div>{t('modal.item3')}</div>
-                  </div>
-                </div>
-                <div style={{ width: '100%', marginBottom: 12 }}>
-                  <h3 style={{ fontSize: 17, margin: '8px 0' }}>{t('modal.assets')}</h3>
-                  <div style={{ fontSize: 14, color: '#555', lineHeight: 1.6 }}>
-                    <div>{t('modal.cash')}: 18.00</div>
-                    <div>{t('modal.property')}: 450.00</div>
-                    <div>{t('modal.spendingLevel')}: 10.00</div>
-                  </div>
-                </div>
-                <button onClick={handleClose} style={{ width: '100%', padding: '12px 0', fontSize: 18, background: '#1890ff', color: '#fff', border: 'none', borderRadius: 8, marginTop: 8, fontWeight: 500 }}>{t('button.close')}</button>
-              </div>
+              )}
+
+              {/* 关闭按钮 */}
+              <button 
+                onClick={handleClose} 
+                style={{ 
+                  width: '100%', 
+                  padding: '15px 0', 
+                  fontSize: '18px', 
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', 
+                  color: '#fff', 
+                  border: 'none', 
+                  borderRadius: '25px', 
+                  marginTop: '10px', 
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  boxShadow: '0 4px 15px rgba(102, 126, 234, 0.4)'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.transform = 'translateY(-2px)';
+                  e.target.style.boxShadow = '0 6px 20px rgba(102, 126, 234, 0.6)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.transform = 'translateY(0)';
+                  e.target.style.boxShadow = '0 4px 15px rgba(102, 126, 234, 0.4)';
+                }}
+              >
+                {t('button.close')}
+              </button>
             </div>
           </div>
-        )}
-        {/* 新增：Ant Design Modal 雷达图弹窗 */}
-  {/* 已移除鼠标悬停雷达图弹窗 */}
+        </div>
+      )}
       </div>
     </div>
   );

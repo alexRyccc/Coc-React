@@ -1,0 +1,2149 @@
+/* newPerson.css - Mobile First Design */
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+.new-person-container {
+  background-color: rgba(255, 255, 255, 0.98);
+  padding: 15px;
+  margin: 8px;
+  border-radius: 20px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(15px);
+  min-height: calc(100vh - 16px);
+  position: relative;
+}
+
+h2, h3 {
+  text-align: center;
+  color: #333;
+  margin: 20px 0 15px;
+  font-weight: 700;
+  position: relative;
+}
+
+h2 {
+  font-size: 26px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 25px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+h3 {
+  font-size: 18px;
+  color: #555;
+  padding: 10px 0;
+  border-bottom: 2px solid rgba(102, 126, 234, 0.2);
+  margin-bottom: 20px;
+}
+
+/* 手机端表格布局 */
+.character-tables {
+  display: block;
+  width: 100%;
+}
+
+.character-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 25px;
+  background: rgba(255, 255, 255, 0.98);
+  border-radius: 15px;
+  overflow: hidden;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+}
+
+.character-table th, .character-table td {
+  padding: 14px 12px;
+  border: none;
+  font-size: 15px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.character-table th {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  font-weight: 600;
+  font-size: 14px;
+  width: 35%;
+  text-align: center;
+}
+
+.character-table td {
+  background: rgba(255, 255, 255, 0.95);
+  width: 65%;
+}
+
+.character-table tr:last-child th,
+.character-table tr:last-child td {
+  border-bottom: none;
+}
+
+/* 移动端优化表格布局 */
+@media (max-width: 768px) {
+  .character-table {
+    display: block;
+    width: 100%;
+  }
+  
+  .character-table tbody,
+  .character-table tr {
+    display: block;
+    width: 100%;
+  }
+  
+  .character-table tr {
+    margin-bottom: 15px;
+    background: rgba(255, 255, 255, 0.98);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  }
+  
+  .character-table th,
+  .character-table td {
+    display: block;
+    width: 100%;
+    padding: 12px 16px;
+    border: none;
+    text-align: left;
+  }
+  
+  .character-table th {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    font-weight: 600;
+    font-size: 13px;
+    border-radius: 0;
+  }
+  
+  .character-table td {
+    background: rgba(255, 255, 255, 0.95);
+    padding-top: 8px;
+  }
+}
+
+/* 属性表格手机端样式 */
+.attributes-table {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+  margin: 20px 0;
+}
+
+.attributes-table th {
+  background: rgba(255, 255, 255, 0.95);
+  color: #333;
+  font-weight: bold;
+  padding: 15px 8px;
+  font-size: 12px;
+}
+
+.attribute-cell {
+  background: rgba(255, 255, 255, 0.98);
+  padding: 15px 5px;
+  position: relative;
+}
+
+/* 手机端骰子按钮 */
+.dice-button {
+  background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+  border: none;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  font-size: 20px;
+  cursor: pointer;
+  box-shadow: 
+    0 6px 12px rgba(238, 90, 36, 0.4),
+    inset 0 2px 4px rgba(255, 255, 255, 0.3);
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  position: relative;
+  touch-action: manipulation;
+}
+
+.dice-button:hover:not(:disabled) {
+  transform: translateY(-4px) scale(1.05);
+  box-shadow: 
+    0 10px 20px rgba(238, 90, 36, 0.6),
+    0 0 15px rgba(255, 107, 107, 0.8);
+}
+
+.dice-button:active {
+  transform: translateY(-2px) scale(1.02);
+}
+
+.dice-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* 中央大骰子动画 */
+.central-dice-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  backdrop-filter: blur(5px);
+}
+
+.giant-dice {
+  font-size: 150px;
+  animation: giantDiceRoll 1.5s ease-in-out;
+  text-shadow: 0 0 30px rgba(255, 255, 255, 0.8);
+  filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.5));
+}
+
+/* 一键全投按钮 */
+.roll-all-button {
+  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+  color: white;
+  border: none;
+  padding: 20px 30px;
+  font-size: 18px;
+  font-weight: 700;
+  border-radius: 15px;
+  cursor: pointer;
+  margin: 20px 0;
+  width: 100%;
+  box-shadow: 
+    0 8px 20px rgba(238, 90, 36, 0.4),
+    inset 0 2px 4px rgba(255, 255, 255, 0.3);
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  position: relative;
+  overflow: hidden;
+  touch-action: manipulation;
+}
+
+.roll-all-button:hover:not(:disabled) {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 
+    0 15px 30px rgba(238, 90, 36, 0.6),
+    0 0 20px rgba(255, 107, 107, 0.8);
+}
+
+.roll-all-button:active {
+  transform: translateY(-2px) scale(1.01);
+}
+
+.roll-all-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  background: linear-gradient(135deg, #ddd 0%, #ccc 100%);
+}
+
+.roll-all-button::before {
+  content: '🎲🎲🎲';
+  margin-right: 10px;
+  animation: diceShake 2s infinite;
+}
+
+@keyframes diceShake {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-5deg); }
+  75% { transform: rotate(5deg); }
+}
+
+/* 属性总览卡片 */
+.attributes-summary {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 249, 250, 0.95) 100%);
+  border-radius: 15px;
+  padding: 16px;
+  margin: 15px 0;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+  border: 2px solid rgba(102, 126, 234, 0.2);
+}
+
+.summary-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+.summary-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  text-align: center;
+}
+
+.summary-stat {
+  background: rgba(102, 126, 234, 0.1);
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid rgba(102, 126, 234, 0.2);
+}
+
+.summary-stat-label {
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 4px;
+}
+
+.summary-stat-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: #333;
+}
+
+.excellent { color: #28a745; }
+.good { color: #007bff; }
+.average { color: #ffc107; }
+.poor { color: #dc3545; }
+
+@keyframes giantDiceRoll {
+  0% {
+    transform: scale(0) rotateX(0deg) rotateY(0deg) rotateZ(0deg);
+    opacity: 0;
+  }
+  30% {
+    transform: scale(1.5) rotateX(180deg) rotateY(180deg) rotateZ(90deg);
+    opacity: 1;
+  }
+  60% {
+    transform: scale(1.8) rotateX(360deg) rotateY(360deg) rotateZ(180deg);
+  }
+  90% {
+    transform: scale(1.2) rotateX(540deg) rotateY(540deg) rotateZ(270deg);
+  }
+  100% {
+    transform: scale(0) rotateX(720deg) rotateY(720deg) rotateZ(360deg);
+    opacity: 0;
+  }
+}
+
+/* 手机端属性显示 */
+.attribute-display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  min-height: 50px;
+}
+
+.attribute-value {
+  font-weight: bold;
+  font-size: 16px;
+  color: #2c3e50;
+  background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  padding: 8px 12px;
+  border-radius: 10px;
+  display: inline-block;
+  min-width: 35px;
+  text-align: center;
+  animation: valueGlow 1.5s ease-in-out;
+  background-color: rgba(116, 185, 255, 0.1);
+}
+
+@keyframes valueGlow {
+  0% {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.3);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* 手机端重投按钮 */
+.mini-dice-button {
+  background: linear-gradient(135deg, #fdcb6e 0%, #e17055 100%);
+  border: none;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  font-size: 12px;
+  cursor: pointer;
+  box-shadow: 0 3px 6px rgba(225, 112, 85, 0.3);
+  transition: all 0.3s ease;
+  touch-action: manipulation;
+}
+
+.mini-dice-button:hover:not(:disabled) {
+  transform: translateY(-2px) scale(1.1);
+  box-shadow: 0 6px 12px rgba(225, 112, 85, 0.5);
+}
+
+.mini-dice-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* 重投次数显示 */
+.total-rolls-info {
+  background: linear-gradient(135deg, #a29bfe 0%, #6c5ce7 100%);
+  color: white;
+  padding: 10px 15px;
+  border-radius: 15px;
+  text-align: center;
+  margin: 15px 0;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(108, 92, 231, 0.3);
+}
+
+/* 派生属性手机端样式 */
+.derived-stat {
+  font-weight: bold;
+  font-size: 16px;
+  color: #e17055;
+  background: rgba(231, 112, 85, 0.15);
+  padding: 8px 12px;
+  border-radius: 10px;
+  display: inline-block;
+  min-width: 35px;
+  text-align: center;
+  border: 2px solid rgba(231, 112, 85, 0.3);
+}
+
+/* 手机端表单元素 */
+input[type="text"], input[type="number"], textarea, select {
+  width: 100%;
+  padding: 14px 16px;
+  border: 2px solid #e9ecef;
+  border-radius: 12px;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  background: rgba(255, 255, 255, 0.95);
+  -webkit-appearance: none;
+  -moz-appearance: none;
+       appearance: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+input[type="text"]:focus, input[type="number"]:focus, textarea:focus, select:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15), 0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+textarea {
+  resize: vertical;
+  min-height: 80px;
+  line-height: 1.5;
+}
+
+/* 手机端按钮样式 */
+button[type="button"], button[type="submit"] {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 16px 25px;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 100%;
+  margin: 12px 0;
+  touch-action: manipulation;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+button[type="button"]:hover, button[type="submit"]:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+}
+
+button[type="button"]:active, button[type="submit"]:active {
+  transform: translateY(-1px);
+}
+
+button[type="submit"] {
+  background: linear-gradient(135deg, #00b894 0%, #00a085 100%);
+  font-size: 18px;
+  margin-top: 25px;
+  box-shadow: 0 6px 16px rgba(0, 184, 148, 0.4);
+}
+
+button[type="submit"]:hover {
+  box-shadow: 0 10px 24px rgba(0, 184, 148, 0.5);
+}
+
+button[type="submit"]:disabled {
+  background: linear-gradient(135deg, #ddd 0%, #ccc 100%);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* 添加按钮特殊样式 */
+button[type="button"]:not(.dice-button):not(.mini-dice-button) {
+  background: linear-gradient(135deg, #fdcb6e 0%, #e17055 100%);
+  box-shadow: 0 4px 12px rgba(225, 112, 85, 0.3);
+}
+
+button[type="button"]:not(.dice-button):not(.mini-dice-button):hover {
+  box-shadow: 0 8px 20px rgba(225, 112, 85, 0.4);
+}
+
+/* 手机端技能布局 - 卡片式 */
+.skills-container {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  margin: 20px 0;
+}
+
+.skill-card {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border: 2px solid rgba(102, 126, 234, 0.1);
+  transition: all 0.3s ease;
+}
+
+.skill-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+  border-color: rgba(102, 126, 234, 0.3);
+}
+
+/* 技能卡片被修改后的样式 */
+.skill-card.modified {
+  background: linear-gradient(135deg, rgba(255, 234, 167, 0.9) 0%, rgba(253, 203, 110, 0.9) 100%);
+  border-color: #fdcb6e;
+  box-shadow: 0 6px 16px rgba(253, 203, 110, 0.4);
+}
+
+.skill-card.increased {
+  background: linear-gradient(135deg, rgba(168, 230, 207, 0.9) 0%, rgba(136, 216, 163, 0.9) 100%);
+  border-color: #88d8a3;
+  box-shadow: 0 6px 16px rgba(136, 216, 163, 0.4);
+}
+
+.skill-card.decreased {
+  background: linear-gradient(135deg, rgba(255, 234, 167, 0.9) 0%, rgba(250, 177, 160, 0.9) 100%);
+  border-color: #fab1a0;
+  box-shadow: 0 6px 16px rgba(250, 177, 160, 0.4);
+}
+
+.skill-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  position: relative;
+}
+
+/* 修改指示器 */
+.skill-card.modified .skill-card-header::after {
+  content: '✓';
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: linear-gradient(135deg, #fdcb6e 0%, #e17055 100%);
+  color: white;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: bold;
+  box-shadow: 0 2px 6px rgba(225, 112, 85, 0.4);
+  animation: popIn 0.4s ease-out;
+}
+
+.skill-card.increased .skill-card-header::after {
+  content: '↑';
+  background: linear-gradient(135deg, #88d8a3 0%, #66bb6a 100%);
+  box-shadow: 0 2px 6px rgba(136, 216, 163, 0.4);
+}
+
+.skill-card.decreased .skill-card-header::after {
+  content: '↓';
+  background: linear-gradient(135deg, #fab1a0 0%, #e74c3c 100%);
+  box-shadow: 0 2px 6px rgba(250, 177, 160, 0.4);
+}
+
+@keyframes popIn {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  80% {
+    transform: scale(1.2);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.skill-name {
+  font-weight: 600;
+  color: #333;
+  font-size: 15px;
+  flex: 1;
+}
+
+.skill-initial {
+  background: linear-gradient(135deg, #a8e6cf 0%, #88d8a3 100%);
+  color: #2d5a3d;
+  font-weight: 600;
+  padding: 6px 10px;
+  border-radius: 20px;
+  font-size: 13px;
+  min-width: 35px;
+  text-align: center;
+  box-shadow: 0 2px 6px rgba(136, 216, 163, 0.3);
+}
+
+.skill-value {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid #e9ecef;
+  border-radius: 10px;
+  text-align: center;
+  font-weight: 600;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.skill-value:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
+  transform: scale(1.02);
+}
+
+/* 技能值被修改后的样式 */
+.skill-value.modified {
+  background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%);
+  border-color: #fdcb6e;
+  color: #8b4513;
+  box-shadow: 0 4px 12px rgba(253, 203, 110, 0.3);
+  animation: skillModified 0.6s ease-out;
+  position: relative;
+}
+
+.skill-value.increased {
+  background: linear-gradient(135deg, #a8e6cf 0%, #88d8a3 100%);
+  border-color: #88d8a3;
+  color: #2d5a3d;
+  box-shadow: 0 4px 12px rgba(136, 216, 163, 0.4);
+}
+
+.skill-value.decreased {
+  background: linear-gradient(135deg, #ffeaa7 0%, #fab1a0 100%);
+  border-color: #fab1a0;
+  color: #b8502d;
+  box-shadow: 0 4px 12px rgba(250, 177, 160, 0.4);
+}
+
+/* 技能值变化提示 */
+.skill-value.modified::before {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+  z-index: 1000;
+  margin-bottom: 5px;
+}
+
+.skill-value.modified:hover::before {
+  opacity: 1;
+  visibility: visible;
+}
+
+@keyframes skillModified {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* 隐藏传统表格样式 */
+.skills-table {
+  display: none;
+}
+
+/* 技能表格布局在桌面端 */
+@media (min-width: 768px) {
+  .skills-container {
+    display: none;
+  }
+  
+  .skills-table {
+    display: table;
+    width: 100%;
+    border-collapse: collapse;
+    margin: 15px 0;
+    font-size: 14px;
+  }
+  
+  .skills-table th, .skills-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+  }
+  
+  .skills-table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    color: #495057;
+  }
+}
+
+/* 响应式设计 */
+@media (max-width: 480px) {
+  .new-person-container {
+    margin: 5px;
+    padding: 12px;
+    border-radius: 15px;
+  }
+  
+  h2 {
+    font-size: 22px;
+    margin-bottom: 20px;
+  }
+  
+  h3 {
+    font-size: 16px;
+    margin: 15px 0 12px;
+  }
+  
+  .character-table th, .character-table td {
+    padding: 10px 6px;
+    font-size: 13px;
+  }
+  
+  .dice-button {
+    width: 42px;
+    height: 42px;
+    font-size: 16px;
+  }
+  
+  .giant-dice {
+    font-size: 100px;
+  }
+  
+  .attribute-value {
+    font-size: 15px;
+    padding: 6px 10px;
+  }
+  
+  .skill-card {
+    padding: 12px;
+  }
+  
+  .skill-name {
+    font-size: 14px;
+  }
+  
+  .skill-value {
+    padding: 10px 12px;
+    font-size: 15px;
+  }
+  
+  input[type="text"], input[type="number"], textarea {
+    padding: 12px 14px;
+    font-size: 15px;
+  }
+  
+  button[type="button"], button[type="submit"] {
+    padding: 14px 20px;
+    font-size: 15px;
+  }
+}
+
+/* 隐藏桌面端不需要的元素 */
+.section-separator {
+  height: 30px;
+  margin: 25px 0;
+  position: relative;
+}
+
+.section-separator::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 60px;
+  height: 4px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 2px;
+  opacity: 0.3;
+}
+
+/* 手机端优化的历史记录和物品 */
+.item-record, .history-record {
+  background: rgba(255, 255, 255, 0.95);
+  padding: 16px;
+  margin: 12px 0;
+  border-radius: 15px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border: 2px solid rgba(102, 126, 234, 0.1);
+  transition: all 0.3s ease;
+}
+
+.item-record:hover, .history-record:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+  border-color: rgba(102, 126, 234, 0.3);
+}
+
+.item-record {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.history-record {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.item-record input, .history-record input {
+  flex: 1;
+  min-width: 120px;
+  margin: 0;
+}
+
+/* 进度指示器 */
+.progress-indicator {
+  background: rgba(255, 255, 255, 0.9);
+  padding: 12px 20px;
+  border-radius: 25px;
+  margin: 20px 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border: 2px solid rgba(102, 126, 234, 0.2);
+}
+
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background: #e9ecef;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-top: 8px;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 4px;
+  transition: width 0.5s ease;
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    box-shadow: 0 0 5px rgba(102, 126, 234, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(102, 126, 234, 0.8);
+  }
+  100% {
+    box-shadow: 0 0 5px rgba(102, 126, 234, 0.5);
+  }
+}
+
+.progress-text {
+  font-size: 14px;
+  color: #555;
+  font-weight: 600;
+  text-align: center;
+}
+
+/* 状态提示 */
+.status-message {
+  padding: 12px 16px;
+  border-radius: 10px;
+  margin: 15px 0;
+  font-weight: 500;
+  text-align: center;
+  animation: fadeInUp 0.5s ease-out;
+}
+
+.status-success {
+  background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+  color: #155724;
+  border: 2px solid #c3e6cb;
+}
+
+.status-error {
+  background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+  color: #721c24;
+  border: 2px solid #f5c6cb;
+}
+
+.status-info {
+  background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%);
+  color: #0c5460;
+  border: 2px solid #bee5eb;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.skills-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 15px 0;
+  font-size: 14px;
+}
+
+.skills-table th, .skills-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+}
+
+.skills-table th {
+  background-color: #f8f9fa;
+  font-weight: 600;
+  color: #495057;
+}
+
+.skill-name {
+  font-weight: 500;
+  color: #333;
+  min-width: 120px;
+}
+
+.skill-initial {
+  color: #6c757d;
+  font-weight: 500;
+  background-color: #f8f9fa;
+  padding: 4px 8px;
+  border-radius: 4px;
+  display: inline-block;
+  min-width: 30px;
+  text-align: center;
+}
+
+.skill-value {
+  width: 60px;
+  padding: 6px;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  text-align: center;
+  font-weight: 500;
+}
+
+.skill-value:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+}
+
+/* 移动端触觉反馈 */
+@media (max-width: 768px) {
+  /* 为所有交互元素添加触觉反馈 */
+  button, input, textarea {
+    -webkit-tap-highlight-color: rgba(102, 126, 234, 0.2);
+  }
+  
+  /* 添加点击动画 */
+  button:active {
+    transform: scale(0.98) translateY(1px);
+  }
+  
+  input:active, textarea:active {
+    transform: scale(1.02);
+  }
+  
+  /* 优化滚动体验 */
+  .new-person-container {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+  
+  /* 技能卡片动画 */
+  .skill-card {
+    animation: slideInUp 0.5s ease-out backwards;
+  }
+  
+  .skill-card:nth-child(even) {
+    animation-delay: 0.1s;
+  }
+  
+  .skill-card:nth-child(odd) {
+    animation-delay: 0.05s;
+  }
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 加载状态动画 */
+.loading-pulse {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* 成功提示动画 */
+.success-animation {
+  animation: successBounce 0.6s ease-out;
+}
+
+@keyframes successBounce {
+  0% {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.2);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.skill-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.skill-input {
+    width: 90%;
+    padding: 5px;
+    box-sizing: border-box;
+}
+
+.skill-value {
+    width: 80%;
+    padding: 5px;
+    box-sizing: border-box;
+}
+
+.section-separator {
+  height: 20px;
+}
+
+.item-record, .history-record {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.item-record input, .history-record input {
+  flex: 1;
+  padding: 5px;
+  box-sizing: border-box;
+}
+
+textarea {
+  width: 100%;
+  height: 100px;
+  padding: 5px;
+  box-sizing: border-box;
+}
+
+button {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  margin-top: 10px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+button:hover {
+  background-color: #45a049;
+}
+
+/* 技能点分配样式 */
+.skill-points-section {
+  background: linear-gradient(135deg, #ffeaa7, #fab1a0);
+  padding: 20px;
+  border-radius: 15px;
+  margin: 20px 0;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.skill-points-display {
+  text-align: center;
+}
+
+.points-info {
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-top: 10px;
+}
+
+.point-type {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 15px;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 12px;
+  min-width: 120px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.point-type.professional {
+  border-left: 4px solid #e74c3c;
+}
+
+.point-type.interest {
+  border-left: 4px solid #3498db;
+}
+
+.point-type .label {
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 5px;
+  font-size: 14px;
+}
+
+.point-type .available {
+  font-size: 24px;
+  font-weight: bold;
+  color: #2d3436;
+}
+
+.point-type .total {
+  font-size: 14px;
+  color: #636e72;
+}
+
+/* 技能分配控件样式 */
+.allocation-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.allocation-btn {
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 50%;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.allocation-btn.plus {
+  background: linear-gradient(135deg, #00b894, #00a085);
+  color: white;
+}
+
+.allocation-btn.minus {
+  background: linear-gradient(135deg, #e17055, #d63031);
+  color: white;
+}
+
+.allocation-btn:disabled {
+  background: #ddd;
+  color: #999;
+  cursor: not-allowed;
+}
+
+.allocation-btn:hover:not(:disabled) {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.allocation-value {
+  min-width: 25px;
+  text-align: center;
+  font-weight: bold;
+  color: #2d3436;
+  background: rgba(255, 255, 255, 0.8);
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+/* 移动端技能卡片增强样式 */
+.skill-card-enhanced {
+  background: linear-gradient(135deg, #fff, #f8f9fa);
+  border: 2px solid #e9ecef;
+  border-radius: 15px;
+  padding: 15px;
+  margin: 10px 0;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+}
+
+.skill-card-enhanced:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+  border-color: #667eea;
+}
+
+.skill-card-enhanced .skill-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.skill-card-enhanced .skill-name {
+  font-weight: bold;
+  color: #2d3436;
+  font-size: 16px;
+}
+
+.skill-values {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: right;
+}
+
+.skill-initial, .skill-final {
+  font-size: 12px;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.skill-initial {
+  background: #e9ecef;
+  color: #6c757d;
+}
+
+.skill-final {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  font-weight: bold;
+}
+
+.skill-allocation {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.allocation-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: rgba(102, 126, 234, 0.05);
+  border-radius: 8px;
+}
+
+.allocation-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #495057;
+}
+
+/* 状态消息样式 */
+.status-message {
+  padding: 12px 16px;
+  margin: 15px 0;
+  border-radius: 8px;
+  text-align: center;
+  font-weight: 500;
+  animation: slideIn 0.3s ease;
+}
+
+.status-message.success {
+  background: linear-gradient(135deg, #00b894, #00a085);
+  color: white;
+  border: 1px solid #00a085;
+}
+
+.status-message.error {
+  background: linear-gradient(135deg, #e17055, #d63031);
+  color: white;
+  border: 1px solid #d63031;
+}
+
+.status-message.info {
+  background: linear-gradient(135deg, #74b9ff, #0984e3);
+  color: white;
+  border: 1px solid #0984e3;
+}
+
+/* 成功模态框样式 */
+.success-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease;
+}
+
+.success-modal {
+  background: white;
+  padding: 30px;
+  border-radius: 20px;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  max-width: 90%;
+  animation: scaleIn 0.3s ease;
+}
+
+.success-icon {
+  font-size: 48px;
+  margin-bottom: 15px;
+}
+
+.success-modal h3 {
+  color: #00b894;
+  margin: 15px 0;
+}
+
+.success-modal p {
+  color: #636e72;
+  margin: 10px 0;
+}
+
+/* 动画效果 */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* 桌面端技能表格优化 */
+@media (min-width: 768px) {
+  .skills-table {
+    margin: 20px 0;
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+  }
+  
+  .skills-table th {
+    background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+    color: white;
+    padding: 15px 10px;
+    text-align: center;
+    font-weight: 600;
+    font-size: 14px;
+    border-bottom: 2px solid #0984e3;
+  }
+  
+  .skills-table td {
+    padding: 12px 8px;
+    text-align: center;
+    border-bottom: 1px solid #e9ecef;
+    vertical-align: middle;
+  }
+  
+  .skills-table tr:nth-child(even) {
+    background: #f8f9fa;
+  }
+  
+  .skills-table tr:hover {
+    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+    transform: translateY(-1px);
+    transition: all 0.2s ease;
+  }
+  
+  .skills-table .skill-name {
+    font-weight: 600;
+    color: #2d3436;
+    text-align: left !important;
+    min-width: 120px;
+  }
+  
+  .skill-initial {
+    color: #636e72;
+    font-weight: 500;
+    padding: 4px 8px;
+    background: #ddd6fe;
+    border-radius: 6px;
+    font-size: 14px;
+  }
+  
+  .skill-final {
+    color: #2d3436;
+    font-weight: 700;
+    padding: 4px 8px;
+    background: linear-gradient(135deg, #a7f3d0 0%, #6ee7b7 100%);
+    border-radius: 6px;
+    font-size: 15px;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+  }
+  
+  .points-info {
+    max-width: 400px;
+    margin: 10px auto;
+  }
+}
+
+/* 技能点分配区域增强 */
+.skill-points-section {
+  margin: 20px 0;
+  padding: 20px;
+  background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%);
+  border-radius: 15px;
+  box-shadow: 0 4px 15px rgba(253, 203, 110, 0.3);
+}
+
+.skill-points-display {
+  text-align: center;
+}
+
+.points-info {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  margin-top: 10px;
+}
+
+.point-type {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.point-type.professional .label {
+  color: #e17055;
+}
+
+.point-type.interest .label {
+  color: #00b894;
+}
+
+.available {
+  color: #2d3436;
+  font-size: 22px;
+  font-weight: bold;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+}
+
+.total {
+  color: #636e72;
+  font-size: 16px;
+}
+
+/* 输入框样式优化 */
+.allocation-input {
+  width: 60px;
+  padding: 8px 6px;
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  background: white;
+}
+
+.allocation-input:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(116, 185, 255, 0.3);
+  border-color: #74b9ff;
+}
+
+.allocation-input.professional {
+  border-color: #e17055;
+  color: #e17055;
+}
+
+.allocation-input.professional:focus {
+  box-shadow: 0 0 0 3px rgba(225, 112, 85, 0.3);
+  border-color: #e17055;
+}
+
+.allocation-input.interest {
+  border-color: #00b894;
+  color: #00b894;
+}
+
+.allocation-input.interest:focus {
+  box-shadow: 0 0 0 3px rgba(0, 184, 148, 0.3);
+  border-color: #00b894;
+}
+
+/* 移动端技能卡片增强 */
+.skills-container {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 15px;
+  margin: 20px 0;
+}
+
+.skill-card-enhanced {
+  background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
+  border: 1px solid #e9ecef;
+  border-radius: 15px;
+  padding: 20px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  transition: all 0.3s ease;
+}
+
+.skill-card-enhanced:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.skill-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #e9ecef;
+}
+
+.skill-card-header .skill-name {
+  font-size: 18px;
+  font-weight: 700;
+  color: #2d3436;
+}
+
+.skill-values {
+  display: flex;
+  gap: 15px;
+  font-size: 14px;
+}
+
+.skill-values .skill-initial {
+  background: linear-gradient(135deg, #ddd6fe 0%, #c7d2fe 100%);
+  color: #5b21b6;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-weight: 500;
+}
+
+.skill-values .skill-final {
+  background: linear-gradient(135deg, #a7f3d0 0%, #6ee7b7 100%);
+  color: #047857;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-weight: 700;
+}
+
+.skill-allocation {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+}
+
+.allocation-row {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.allocation-label {
+  font-weight: 600;
+  font-size: 14px;
+  color: #636e72;
+}
+
+/* 提交按钮优化 */
+.submit-button {
+  background: linear-gradient(135deg, #00b894 0%, #00cec9 100%);
+  color: white;
+  border: none;
+  padding: 15px 40px;
+  border-radius: 25px;
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0, 184, 148, 0.3);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  width: 100%;
+  margin: 20px 0;
+}
+
+.submit-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 184, 148, 0.4);
+}
+
+.submit-button:disabled {
+  background: linear-gradient(135deg, #b2bec3 0%, #636e72 100%);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* 移动端响应式优化 */
+@media (max-width: 768px) {
+  .skills-table {
+    display: none;
+  }
+  
+  .points-info {
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .skill-points-section {
+    padding: 15px;
+  }
+  
+  .skill-card-enhanced {
+    padding: 15px;
+  }
+  
+  .skill-allocation {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  
+  .allocation-row {
+    flex-direction: row;
+    justify-content: space-between;
+  }
+  
+  .allocation-input {
+    width: 80px;
+  }
+  
+  .submit-button {
+    font-size: 16px;
+    padding: 12px 30px;
+  }
+}
+
+@media (min-width: 769px) {
+  .skills-container {
+    display: none;
+  }
+}
+
+/* 技能分配快速按钮和输入组样式 */
+.allocation-input-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.allocation-input {
+  width: 60px;
+  padding: 6px 8px;
+  border: 2px solid #ddd;
+  border-radius: 6px;
+  text-align: center;
+  font-weight: bold;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.allocation-input.professional {
+  border-color: #4caf50;
+  background: linear-gradient(135deg, #f1f8e9, #e8f5e8);
+}
+
+.allocation-input.professional:focus {
+  border-color: #388e3c;
+  background: #e8f5e8;
+  box-shadow: 0 0 8px rgba(76, 175, 80, 0.3);
+  outline: none;
+}
+
+.allocation-input.interest {
+  border-color: #ff9800;
+  background: linear-gradient(135deg, #fff8e1, #fff3e0);
+}
+
+.allocation-input.interest:focus {
+  border-color: #f57c00;
+  background: #fff3e0;
+  box-shadow: 0 0 8px rgba(255, 152, 0, 0.3);
+  outline: none;
+}
+
+.quick-buttons {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.quick-buttons button {
+  padding: 4px 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: linear-gradient(135deg, #f5f5f5, #e0e0e0);
+  color: #333;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 30px;
+  font-weight: bold;
+}
+
+.quick-buttons button:hover {
+  background: linear-gradient(135deg, #e0e0e0, #d5d5d5);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  border-color: #999;
+}
+
+.quick-buttons button:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.reset-skill-btn {
+  background: linear-gradient(135deg, #ffebee, #ffcdd2);
+  border: 1px solid #f44336;
+  color: #c62828;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.reset-skill-btn:hover {
+  background: linear-gradient(135deg, #ffcdd2, #ef9a9a);
+  transform: scale(1.05);
+  box-shadow: 0 2px 6px rgba(244, 67, 54, 0.3);
+}
+
+.reset-skill-btn.mobile {
+  padding: 4px 8px;
+  font-size: 12px;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+
+.reset-all-btn {
+  background: linear-gradient(135deg, #ffebee, #ffcdd2);
+  border: 2px solid #f44336;
+  color: #c62828;
+  padding: 10px 15px;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 14px;
+}
+
+.reset-all-btn:hover {
+  background: linear-gradient(135deg, #ffcdd2, #ef9a9a);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(244, 67, 54, 0.3);
+}
+
+/* 技能卡片增强样式 */
+.skill-card-enhanced {
+  background: linear-gradient(135deg, #ffffff, #f8f9fa);
+  border: 2px solid #e1bee7;
+  border-radius: 12px;
+  padding: 16px;
+  position: relative;
+  box-shadow: 0 4px 8px rgba(225, 190, 231, 0.3);
+  transition: all 0.3s ease;
+  margin-bottom: 16px;
+}
+
+.skill-card-enhanced:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(225, 190, 231, 0.4);
+  border-color: #ce93d8;
+}
+
+.skill-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 15px;
+  flex-wrap: wrap;
+  gap: 10px;
+  position: relative;
+}
+
+.skill-name {
+  font-weight: bold;
+  font-size: 16px;
+  color: #4a148c;
+  flex: 1;
+  min-width: 120px;
+}
+
+.skill-values {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  margin-right: 35px;
+}
+
+.skill-initial, .skill-final {
+  font-size: 12px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: bold;
+  min-width: 50px;
+  text-align: center;
+}
+
+.skill-initial {
+  background: linear-gradient(135deg, #e8eaf6, #c5cae9);
+  color: #3f51b5;
+  border: 1px solid #7986cb;
+}
+
+.skill-final {
+  background: linear-gradient(135deg, #e1f5fe, #b3e5fc);
+  color: #0277bd;
+  border: 1px solid #29b6f6;
+}
+
+.skill-allocation {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.allocation-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.allocation-label {
+  font-weight: bold;
+  font-size: 14px;
+  min-width: 70px;
+  color: #333;
+}
+
+/* 百面骰子动画样式 */
+.central-dice-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  backdrop-filter: blur(4px);
+}
+
+.giant-dice.d100 {
+  width: 120px;
+  height: 120px;
+  background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #feca57);
+  background-size: 400% 400%;
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  animation: dice-spin 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite,
+             dice-gradient 2s ease-in-out infinite,
+             dice-pulse 1.5s ease-in-out infinite;
+  box-shadow: 0 0 30px rgba(255, 255, 255, 0.5),
+              inset 0 0 20px rgba(255, 255, 255, 0.3);
+  border: 3px solid rgba(255, 255, 255, 0.8);
+}
+
+.dice-face {
+  font-size: 24px;
+  font-weight: bold;
+  color: white;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+  z-index: 1;
+  letter-spacing: 2px;
+}
+
+.dice-dots {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-around;
+  align-items: space-around;
+  padding: 10px;
+  opacity: 0.3;
+}
+
+.dice-dots span {
+  color: white;
+  font-size: 8px;
+  animation: dots-twinkle 1s ease-in-out infinite alternate;
+}
+
+.dice-dots span:nth-child(odd) {
+  animation-delay: 0.2s;
+}
+
+.dice-dots span:nth-child(even) {
+  animation-delay: 0.4s;
+}
+
+@keyframes dice-spin {
+  0% { transform: rotate(0deg) scale(1); }
+  25% { transform: rotate(90deg) scale(1.1); }
+  50% { transform: rotate(180deg) scale(1); }
+  75% { transform: rotate(270deg) scale(1.1); }
+  100% { transform: rotate(360deg) scale(1); }
+}
+
+@keyframes dice-gradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes dice-pulse {
+  0%, 100% { 
+    box-shadow: 0 0 30px rgba(255, 255, 255, 0.5),
+                inset 0 0 20px rgba(255, 255, 255, 0.3);
+  }
+  50% { 
+    box-shadow: 0 0 50px rgba(255, 255, 255, 0.8),
+                inset 0 0 30px rgba(255, 255, 255, 0.5);
+  }
+}
+
+@keyframes dots-twinkle {
+  0% { opacity: 0.2; transform: scale(0.8); }
+  100% { opacity: 0.8; transform: scale(1.2); }
+}
+
+/* 移动端特殊适配 */
+@media (max-width: 768px) {
+  .allocation-input-group {
+    width: 100%;
+  }
+  
+  .allocation-row {
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .allocation-label {
+    min-width: 60px;
+    font-size: 13px;
+  }
+  
+  .allocation-input {
+    width: 50px;
+    font-size: 13px;
+  }
+  
+  .quick-buttons {
+    gap: 2px;
+  }
+  
+  .quick-buttons button {
+    padding: 3px 6px;
+    font-size: 10px;
+    min-width: 25px;
+  }
+  
+  .giant-dice.d100 {
+    width: 100px;
+    height: 100px;
+  }
+  
+  .dice-face {
+    font-size: 20px;
+  }
+  
+  .skill-card-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .skill-values {
+    align-items: flex-start;
+    margin-right: 0;
+    margin-bottom: 10px;
+  }
+  
+  .reset-skill-btn.mobile {
+    top: 8px;
+    right: 8px;
+    padding: 3px 6px;
+    font-size: 11px;
+  }
+}
+.sidebar {
+    position: fixed;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 1000;
+  }
+  
+  .sidebar ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .sidebar ul li {
+    margin-bottom: 10px;
+  }
+  
+  .sidebar-button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 50px;
+    height: 50px;
+    background-color: #84a7cf;
+    font-size: 0.75em; /* 调整字体大小 */
+    color: white;
+    border-radius: 50%;
+    text-decoration: none;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s, transform 0.3s;
+  }
+  
+  .sidebar-button:hover {
+    background-color: #0056b3;
+    transform: scale(1.1);
+  }
+  
+  .sidebar-button:active {
+    background-color: #003f7f;
+  }

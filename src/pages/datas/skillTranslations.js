@@ -104,6 +104,11 @@ const skillTranslations = {
     artillery: "炮术",
     diving: "潜水",
     animalHandling: "驯兽",
+    custom1: "自定义技能1",
+    custom2: "自定义技能2",
+    custom3: "自定义技能3",
+    custom4: "自定义技能4",
+    custom5: "自定义技能5"
   };
 
 

@@ -1,31 +1,75 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
 import Sidebar from '../Sidebar'; // 引入Sidebar组件
-import sampleCharacters from '../sampleCharacter.js'; // 引入sampleCharacters数据
 import './history.css';
 import VerticalTimelineAnimated from './VerticalTimelineAnimated';
 
 const History = () => {
   const [selectedCharacter, setSelectedCharacter] = useState(null); // 当前选中的角色
   const [searchTerm, setSearchTerm] = useState(''); // 搜索关键词
-  const [filteredCharacters, setFilteredCharacters] = useState(sampleCharacters); // 过滤后的角色列表
+  const [filteredCharacters, setFilteredCharacters] = useState([]); // 过滤后的角色列表
+  
+  // 从 Redux store 中获取角色数据，类似 home.js 的实现
+  const rawCharacters = useSelector(state => state.characters || []);
+  const user = useSelector(state => state.user);
+  const dispatch = useDispatch();
+  
+  console.log('History - User state:', user);
+  console.log('History - Raw characters:', rawCharacters);
+  
+  // 使用 useMemo 来避免每次渲染都重新计算 characters
+  const characters = useMemo(() => {
+    // 自动转换为sampleCharacters格式
+    function convertToSampleCharacter(apiCharacter) {
+      // 转换 skills 字段
+      const skills = {};
+      if (apiCharacter.skills) {
+        Object.entries(apiCharacter.skills).forEach(([key, value]) => {
+          if (typeof value === 'number') {
+            skills[key] = { initial: value, current: value };
+          }
+        });
+      }
+      return {
+        ...apiCharacter,
+        skills,
+        int: apiCharacter.int_ ?? apiCharacter.int,
+      };
+    }
+    
+    return Array.isArray(rawCharacters)
+      ? rawCharacters.map(convertToSampleCharacter)
+      : rawCharacters ? [convertToSampleCharacter(rawCharacters)] : [];
+  }, [rawCharacters]);
 
   useEffect(() => {
-    // 检查 sessionStorage 中是否有 'historyPageRefreshed' 标志
-    const hasRefreshed = sessionStorage.getItem('historyPageRefreshed');
-    if (!hasRefreshed || hasRefreshed === 'false') {
-      // 如果没有刷新过，刷新页面并设置标志
-      sessionStorage.setItem('historyPageRefreshed', 'true');
-      window.location.reload();
+    // 只有在用户已登录时才获取角色
+    if (user) {
+      console.log('History - User logged in, fetching characters');
+      dispatch({ type: 'FETCH_CHARACTERS' });
+    } else {
+      console.log('History - User not logged in');
     }
+  }, [dispatch, user]);
+
+  useEffect(() => {
+    // 移除页面刷新逻辑，因为它会导致状态丢失
+    // 检查 sessionStorage 中是否有 'historyPageRefreshed' 标志
+    // const hasRefreshed = sessionStorage.getItem('historyPageRefreshed');
+    // if (!hasRefreshed || hasRefreshed === 'false') {
+    //   // 如果没有刷新过，刷新页面并设置标志
+    //   sessionStorage.setItem('historyPageRefreshed', 'true');
+    //   window.location.reload();
+    // }
   }, []);
 
   useEffect(() => {
     // 根据搜索关键词过滤角色列表
-    const results = sampleCharacters.filter(character =>
-      character.name.toLowerCase().includes(searchTerm.toLowerCase())
+    const results = characters.filter(character =>
+      character.name && character.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
     setFilteredCharacters(results);
-  }, [searchTerm]);
+  }, [searchTerm, characters]);
 
   // 点击人物，更新选中的角色
   const handleCharacterClick = (character) => {

@@ -1,4 +1,65 @@
 /* 手机端登录页弹窗和表单美化样式 */
+
+/* 消息提示样式 */
+.login-message {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 12px 24px;
+  border-radius: 8px;
+  color: white;
+  font-weight: 500;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  animation: slide-down 0.3s ease-out;
+  min-width: 300px;
+  justify-content: space-between;
+}
+
+.login-message.success {
+  background: linear-gradient(135deg, #4CAF50, #45a049);
+  box-shadow: 0 4px 16px rgba(76, 175, 80, 0.3);
+}
+
+.login-message.error {
+  background: linear-gradient(135deg, #f44336, #e53935);
+  box-shadow: 0 4px 16px rgba(244, 67, 54, 0.3);
+}
+
+.login-message-close {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background 0.2s;
+}
+
+.login-message-close:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+@keyframes slide-down {
+  from {
+    transform: translateX(-50%) translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
+}
+
 .login-mobile-container {
   min-height: 100vh;
   display: flex;
@@ -96,6 +157,19 @@
   background: linear-gradient(90deg,#5c6ac4 0%,#4a90e2 100%);
   transform: scale(1.05);
 }
+
+.login-mobile-btn:disabled {
+  background: #ccc !important;
+  cursor: not-allowed;
+  transform: none !important;
+  opacity: 0.7;
+}
+
+.login-mobile-btn:disabled:hover {
+  background: #ccc !important;
+  transform: none !important;
+}
+
 .login-mobile-account-options {
   display: flex;
   justify-content: space-between;

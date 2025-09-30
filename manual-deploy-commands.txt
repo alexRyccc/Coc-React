@@ -1,0 +1,78 @@
+# 简化手动部署命令集合
+# 复制粘贴执行即可
+
+# ===== 本地操作 =====
+
+# 1. 构建项目
+npm run build
+
+# 2. 创建压缩包
+Compress-Archive -Path "dist\*" -DestinationPath "dist.zip" -Force
+
+# ===== 服务器操作 =====
+# 先上传 dist.zip 到服务器 /tmp/ 目录，然后执行以下命令：
+
+# 3. SSH连接到服务器
+# ssh root@47.104.133.111
+
+# 4. 在服务器上执行以下命令：
+
+# 创建项目目录
+sudo mkdir -p /home/admin/coc-react
+sudo chown -R www:www /home/admin/coc-react
+
+# 解压文件
+cd /home/admin/coc-react
+sudo unzip -o /tmp/dist.zip
+sudo chown -R www:www /home/admin/coc-react
+sudo chmod -R 755 /home/admin/coc-react
+
+# 创建Nginx配置
+sudo tee /www/server/panel/vhost/nginx/coc-react.conf > /dev/null << 'EOF'
+server {
+    listen 80;
+    server_name 47.104.133.111;
+    root /home/admin/coc-react;
+    index index.html;
+
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg)$ {
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+    }
+
+    location /api/ {
+        proxy_pass http://localhost:8082/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        
+        add_header Access-Control-Allow-Origin $http_origin;
+        add_header Access-Control-Allow-Credentials true;
+        add_header Access-Control-Allow-Methods 'GET, POST, OPTIONS, PUT, DELETE';
+        add_header Access-Control-Allow-Headers 'DNT,X-Mx-ReqToken,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization';
+        
+        if ($request_method = 'OPTIONS') {
+            return 204;
+        }
+    }
+
+    gzip on;
+    gzip_vary on;
+    gzip_min_length 1024;
+    gzip_comp_level 6;
+    gzip_types text/plain text/css text/xml text/javascript application/javascript application/xml+rss application/json;
+}
+EOF
+
+# 测试并重载Nginx配置
+sudo nginx -t && sudo nginx -s reload
+
+# 清理临时文件
+rm -f /tmp/dist.zip
+
+echo "部署完成！访问 http://47.104.133.111"
