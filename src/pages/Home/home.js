@@ -326,188 +326,219 @@ const Home = () => {
         {characters.map((character, index) => {
           const offset = index - selectedIndex;
           const isSelected = index === selectedIndex;
-          
-          // 计算卡片的位置和角度，让其他卡片更明显地露出边边
-          const translateX = offset * 50; // 增加横向间距
-          const translateY = Math.abs(offset) * 10; // 添加纵向偏移
-          const rotateY = offset * 10; // 减少旋转角度
-          const scale = isSelected ? 1 : 0.9; // 稍微调整缩放比例
-          const zIndex = isSelected ? 20 : 20 - Math.abs(offset);
-          
+          // 堆叠效果参数
+          const cardWidth = 300;
+          const overlap = cardWidth * 0.33; // 漏出三分之一
+          let translateX = 0;
+          let zIndex = 10 + index;
+          let opacity = 1;
+          let showName = false;
+          if (isSelected) {
+            translateX = 0;
+            zIndex = 100;
+            opacity = 1;
+            showName = true;
+          } else if (index < selectedIndex) {
+            // 左侧卡片
+            translateX = (index - selectedIndex) * overlap;
+            zIndex = 50 + index;
+            opacity = 0.85;
+            showName = true;
+          } else if (index > selectedIndex) {
+            // 右侧卡片
+            translateX = (index - selectedIndex) * overlap;
+            zIndex = 50 - index;
+            opacity = 0.85;
+            showName = true;
+          }
           return (
             <div
               key={index}
-              className={`character-card ${isSelected ? 'selected' : ''} ${isAnimating ? 'animating' : ''}`}
+              className={`character-card ${isSelected ? 'selected' : ''}`}
               style={{
                 position: 'absolute',
-                width: '300px',
+                width: cardWidth + 'px',
                 height: '480px',
                 background: 'linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.85) 100%)',
                 borderRadius: '20px',
                 boxShadow: isSelected 
-                  ? '0 25px 50px rgba(0,0,0,0.4), 0 0 0 3px rgba(102, 126, 234, 0.6)' 
-                  : `0 ${15 + Math.abs(offset) * 5}px ${30 + Math.abs(offset) * 10}px rgba(0,0,0,0.3)`,
-                transform: `
-                  translateX(${translateX}px) 
-                  translateY(${translateY}px)
-                  translateZ(${isSelected ? 0 : -Math.abs(offset) * 80}px)
-                  rotateY(${rotateY}deg)
-                  scale(${scale})
-                `,
-                opacity: Math.abs(offset) > 3 ? 0 : 1 - Math.abs(offset) * 0.1,
-                transition: isAnimating 
-                  ? 'all 0.4s cubic-bezier(0.4, 0.0, 0.2, 1)' 
-                  : 'all 0.6s cubic-bezier(0.4, 0.0, 0.2, 1)',
+                  ? '0 18px 36px rgba(0,0,0,0.25), 0 0 0 2px rgba(102, 126, 234, 0.4)' 
+                  : '0 8px 16px rgba(0,0,0,0.12)',
+                transform: `translateX(${translateX}px)`,
+                opacity: opacity,
+                transition: 'transform 0.25s cubic-bezier(0.4,0,0.2,1), opacity 0.25s cubic-bezier(0.4,0,0.2,1)',
                 cursor: 'pointer',
                 zIndex: zIndex,
-                backdropFilter: 'blur(10px)',
                 border: isSelected 
-                  ? '2px solid rgba(102, 126, 234, 0.8)' 
-                  : '1px solid rgba(255,255,255,0.3)',
+                  ? '2px solid rgba(102, 126, 234, 0.5)' 
+                  : '1px solid rgba(255,255,255,0.2)',
                 padding: '25px',
                 display: 'flex',
                 flexDirection: 'column',
-                alignItems: 'center'
+                alignItems: 'center',
+                willChange: 'transform, opacity',
+                backgroundClip: 'padding-box',
+                overflow: 'hidden',
               }}
               onClick={() => handleCardClick(index)}
             >
-              {/* 头像 */}
-              <div style={{
-                width: '100px',
-                height: '100px',
-                borderRadius: '50%',
-                overflow: 'hidden',
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                padding: '3px',
-                marginBottom: '15px',
-                boxShadow: '0 8px 25px rgba(102, 126, 234, 0.3)'
-              }}>
+              {/* 头像，仅主卡显示 */}
+              {isSelected && (
                 <div style={{
-                  width: '100%',
-                  height: '100%',
+                  width: '100px',
+                  height: '100px',
                   borderRadius: '50%',
                   overflow: 'hidden',
-                  background: '#fff'
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  padding: '3px',
+                  marginBottom: '15px',
+                  boxShadow: '0 8px 25px rgba(102, 126, 234, 0.3)'
                 }}>
-                  <img
-                    src={getCharacterImage(character)}
-                    alt={`${character.name}头像`}
-                    style={{ 
-                      width: '100%', 
-                      height: '100%', 
-                      objectFit: 'cover'
+                  <div style={{
+                    width: '100%',
+                    height: '100%',
+                    borderRadius: '50%',
+                    overflow: 'hidden',
+                    background: '#fff'
+                  }}>
+                    <img
+                      src={getCharacterImage(character)}
+                      alt={`${character.name}头像`}
+                      style={{ 
+                        width: '100%', 
+                        height: '100%', 
+                        objectFit: 'cover'
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* 姓名，所有卡片都显示 */}
+              {showName && (
+                <div style={{
+                  textAlign: 'center',
+                  marginBottom: isSelected ? '20px' : '0',
+                  width: '100%',
+                  fontWeight: isSelected ? 700 : 500,
+                  fontSize: isSelected ? '24px' : '16px',
+                  color: isSelected ? '#333' : '#888',
+                  background: isSelected ? 'none' : 'rgba(255,255,255,0.7)',
+                  borderRadius: isSelected ? '0' : '10px',
+                  padding: isSelected ? '0' : '4px 0',
+                  position: isSelected ? 'static' : 'absolute',
+                  top: isSelected ? undefined : '10px',
+                  left: 0,
+                  right: 0,
+                  zIndex: 200,
+                  boxShadow: isSelected ? 'none' : '0 2px 8px rgba(0,0,0,0.08)'
+                }}>
+                  {character.name}
+                </div>
+              )}
+
+              {/* 角色信息，仅主卡显示 */}
+              {isSelected && (
+                <div style={{ textAlign: 'center', marginBottom: '20px', width: '100%' }}>
+                  <div style={{ 
+                    display: 'flex', 
+                    justifyContent: 'space-between', 
+                    fontSize: '14px', 
+                    color: '#666',
+                    marginBottom: '8px',
+                    padding: '0 10px'
+                  }}>
+                    <span>{t('character.age')}: {character.age}</span>
+                    <span>{t('character.gender')}: {character.gender}</span>
+                  </div>
+                  <div style={{ 
+                    fontSize: '14px', 
+                    color: '#888',
+                    fontStyle: 'italic'
+                  }}>
+                    {character.profession}
+                  </div>
+                </div>
+              )}
+
+              {/* 雷达图，仅主卡显示 */}
+              {isSelected && (
+                <div style={{ 
+                  width: '100%', 
+                  height: '200px',
+                  marginBottom: '15px',
+                  transform: 'translateY(-10px)'
+                }}>
+                  <ReactECharts
+                    style={{ height: '100%', width: '100%' }}
+                    option={{
+                      tooltip: {
+                        trigger: 'item'
+                      },
+                      radar: {
+                        indicator: [
+                          { name: t('attribute.str'), max: 100 },
+                          { name: t('attribute.dex'), max: 100 },
+                          { name: t('attribute.int'), max: 100 },
+                          { name: t('attribute.con'), max: 100 },
+                          { name: t('attribute.app'), max: 100 },
+                          { name: t('attribute.pow'), max: 100 },
+                          { name: t('attribute.siz'), max: 100 },
+                          { name: t('attribute.edu'), max: 100 },
+                          { name: t('attribute.luck'), max: 100 },
+                        ],
+                        shape: 'circle',
+                        splitNumber: 4,
+                        radius: '70%',
+                        axisName: {
+                          color: '#555',
+                          fontWeight: '600',
+                          fontSize: 11
+                        },
+                        splitLine: {
+                          lineStyle: {
+                            color: 'rgba(102, 126, 234, 0.2)'
+                          }
+                        },
+                        splitArea: {
+                          show: true,
+                          areaStyle: {
+                            color: ['rgba(102, 126, 234, 0.05)', 'rgba(102, 126, 234, 0.1)']
+                          }
+                        }
+                      },
+                      series: [{
+                        type: 'radar',
+                        data: [{
+                          value: [
+                            character.str, character.dex, character.int,
+                            character.con, character.app, character.pow,
+                            character.siz, character.edu, character.luck,
+                          ],
+                          name: character.name,
+                          areaStyle: { 
+                            opacity: 0.3,
+                            color: 'rgba(102, 126, 234, 0.3)'
+                          },
+                          lineStyle: { 
+                            width: 2,
+                            color: '#667eea'
+                          },
+                          symbol: 'circle',
+                          symbolSize: 6,
+                          itemStyle: { 
+                            color: '#667eea',
+                            shadowColor: 'rgba(102, 126, 234, 0.5)',
+                            shadowBlur: 10
+                          }
+                        }]
+                      }]
                     }}
                   />
                 </div>
-              </div>
+              )}
 
-              {/* 角色信息 */}
-              <div style={{ textAlign: 'center', marginBottom: '20px', width: '100%' }}>
-                <h3 style={{ 
-                  fontSize: '24px', 
-                  margin: '0 0 10px 0', 
-                  fontWeight: '700', 
-                  color: '#333',
-                  textShadow: '0 2px 4px rgba(0,0,0,0.1)'
-                }}>
-                  {character.name}
-                </h3>
-                <div style={{ 
-                  display: 'flex', 
-                  justifyContent: 'space-between', 
-                  fontSize: '14px', 
-                  color: '#666',
-                  marginBottom: '8px',
-                  padding: '0 10px'
-                }}>
-                  <span>{t('character.age')}: {character.age}</span>
-                  <span>{t('character.gender')}: {character.gender}</span>
-                </div>
-                <div style={{ 
-                  fontSize: '14px', 
-                  color: '#888',
-                  fontStyle: 'italic'
-                }}>
-                  {character.profession}
-                </div>
-              </div>
-
-              {/* 雷达图 */}
-              <div style={{ 
-                width: '100%', 
-                height: '200px',
-                marginBottom: '15px',
-                transform: 'translateY(-10px)' // 向上移动雷达图避免重叠
-              }}>
-                <ReactECharts
-                  style={{ height: '100%', width: '100%' }}
-                  option={{
-                    tooltip: {
-                      trigger: 'item'
-                    },
-                    radar: {
-                      indicator: [
-                        { name: t('attribute.str'), max: 100 },
-                        { name: t('attribute.dex'), max: 100 },
-                        { name: t('attribute.int'), max: 100 },
-                        { name: t('attribute.con'), max: 100 },
-                        { name: t('attribute.app'), max: 100 },
-                        { name: t('attribute.pow'), max: 100 },
-                        { name: t('attribute.siz'), max: 100 },
-                        { name: t('attribute.edu'), max: 100 },
-                        { name: t('attribute.luck'), max: 100 },
-                      ],
-                      shape: 'circle',
-                      splitNumber: 4,
-                      radius: '70%',
-                      axisName: {
-                        color: '#555',
-                        fontWeight: '600',
-                        fontSize: 11
-                      },
-                      splitLine: {
-                        lineStyle: {
-                          color: 'rgba(102, 126, 234, 0.2)'
-                        }
-                      },
-                      splitArea: {
-                        show: true,
-                        areaStyle: {
-                          color: ['rgba(102, 126, 234, 0.05)', 'rgba(102, 126, 234, 0.1)']
-                        }
-                      }
-                    },
-                    series: [{
-                      type: 'radar',
-                      data: [{
-                        value: [
-                          character.str, character.dex, character.int,
-                          character.con, character.app, character.pow,
-                          character.siz, character.edu, character.luck,
-                        ],
-                        name: character.name,
-                        areaStyle: { 
-                          opacity: 0.3,
-                          color: 'rgba(102, 126, 234, 0.3)'
-                        },
-                        lineStyle: { 
-                          width: 2,
-                          color: '#667eea'
-                        },
-                        symbol: 'circle',
-                        symbolSize: 6,
-                        itemStyle: { 
-                          color: '#667eea',
-                          shadowColor: 'rgba(102, 126, 234, 0.5)',
-                          shadowBlur: 10
-                        }
-                      }]
-                    }]
-                  }}
-                />
-              </div>
-
-              {/* 查看详情按钮 */}
+              {/* 查看详情按钮，仅主卡显示 */}
               {isSelected && (
                 <button
                   style={{

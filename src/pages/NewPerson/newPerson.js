@@ -1,16 +1,34 @@
 import React, { useState, useEffect } from 'react';
+import professionList from './professionList';
+import professionSkillMapping from './professionSkillMapping';
+import touziGif from './images/touzi.gif';
 import { useDispatch, useSelector } from 'react-redux';
 import './newPerson.css';
 import skillTranslations from '../datas/skillTranslations';
 import initialSkillValues from '../datas/initialSkillValues';
 import Sidebar from '../Sidebar';
+import skillKeyAlias from './skillKeyAlias';
 
 const NewPerson = () => {
+  // 深拷贝初始技能，避免状态与常量对象共享引用
+  const cloneInitialSkills = () => JSON.parse(JSON.stringify(initialSkillValues));
+  const resolveSkillKey = (raw) => {
+    if (!raw) return null;
+    if (initialSkillValues[raw]) return raw;
+    const alias = skillKeyAlias[raw];
+    if (alias && initialSkillValues[alias]) return alias;
+    return null;
+  };
   const dispatch = useDispatch();
   const { isCreatingCharacter, createCharacterError, user } = useSelector(state => state);
   const [name, setName] = useState('');
   const [age, setAge] = useState('');
   const [profession, setProfession] = useState('');
+  const [customProfession, setCustomProfession] = useState('');
+  // 主技能和特长技能
+  const [mainSkills, setMainSkills] = useState([]); // 本职技能key
+  const [selectedSpecialSkills, setSelectedSpecialSkills] = useState([]); // 选中的特长技能key
+  const [mainSkillSelectable, setMainSkillSelectable] = useState([]); // 可选本职技能key（如有“任意一项”）
   const [gender, setGender] = useState('');
   const [currentResidence, setCurrentResidence] = useState('');
   const [birthplace, setBirthplace] = useState('');
@@ -333,7 +351,7 @@ const NewPerson = () => {
 
   // 当组件加载时，初始化技能值
   useEffect(() => {
-    setSkillValues(initialSkillValues);
+    setSkillValues(cloneInitialSkills());
   }, []);
 
   // 计算剩余技能点
@@ -356,53 +374,38 @@ const NewPerson = () => {
     };
   };
 
-  // 技能分配函数 - 直接设置值
+  // 技能分配函数
   const handleSkillAllocation = (skillKey, pointType, value) => {
     const currentAllocation = skillAllocation[skillKey] || { professional: 0, interest: 0 };
     const remaining = getRemainingSkillPoints();
     const initialValue = initialSkillValues[skillKey]?.initial || 0;
-    
-    // 确保输入值为非负整数
     const newValue = Math.max(0, parseInt(value) || 0);
     const oldValue = currentAllocation[pointType] || 0;
     const valueDifference = newValue - oldValue;
-    
-    // 检查是否有足够的点数
+    // 规则：本职技能可用职业点或兴趣点；非本职技能仅可用兴趣点
+    const isMain = mainSkills.includes(skillKey);
+    if (!isMain && pointType === 'professional') return;
     if (valueDifference > 0 && remaining[pointType] < valueDifference) {
       setStatusMessage({ type: 'error', message: `${pointType === 'professional' ? '职业' : '兴趣'}点不足！剩余${remaining[pointType]}点` });
       setTimeout(() => setStatusMessage({ type: '', message: '' }), 3000);
       return;
     }
-    
-    // 计算最终技能值
     const otherTypeValue = currentAllocation[pointType === 'professional' ? 'interest' : 'professional'] || 0;
     const finalValue = initialValue + newValue + otherTypeValue;
-    
-    // 检查技能值上限
-    if (pointType === 'interest' && finalValue > 70) {
-      setStatusMessage({ type: 'error', message: '使用兴趣点技能值最高只能到70！' });
-      setTimeout(() => setStatusMessage({ type: '', message: '' }), 3000);
-      return;
-    }
-    
+    // 上限：最终值不超过 80
     if (finalValue > 80) {
       setStatusMessage({ type: 'error', message: '技能值最高只能到80！' });
       setTimeout(() => setStatusMessage({ type: '', message: '' }), 3000);
       return;
     }
-    
-    // 更新分配
     const newAllocation = {
       ...currentAllocation,
       [pointType]: newValue
     };
-    
     setSkillAllocation(prev => ({
       ...prev,
       [skillKey]: newAllocation
     }));
-    
-    // 更新技能值
     const newSkillValue = initialValue + newAllocation.professional + newAllocation.interest;
     setSkillValues(prev => ({
       ...prev,
@@ -440,7 +443,7 @@ const NewPerson = () => {
   // 重置所有技能分配
   const resetAllSkillAllocations = () => {
     setSkillAllocation({});
-    setSkillValues(initialSkillValues);
+    setSkillValues(cloneInitialSkills());
     setStatusMessage({ type: 'success', message: '已重置所有技能分配' });
     setTimeout(() => setStatusMessage({ type: '', message: '' }), 2000);
   };
@@ -599,52 +602,240 @@ const NewPerson = () => {
       setStatusMessage({ type: 'error', message: '创建角色失败，请重试！' });
       setIsSubmitting(false);
     }
-  };  return (
+  };
+
+  // 监听职业变化，动态更新本职技能和可选技能
+  // 修正职业技能映射和特长选择逻辑
+  // 修复：本职技能显示逻辑，特长技能选择后mainSkills实时更新
+  useEffect(() => {
+    if (profession && professionSkillMapping[profession]) {
+      const rawMapping = professionSkillMapping[profession];
+      // 统计 special 占位数量
+      const specialCount = rawMapping.filter(k => k.startsWith('special')).length;
+      // 解析映射并做别名转换，使用 resolveSkillKey 保证落到合法 key
+      const allSkillKeys = Object.keys(skillTranslations).filter(k => initialSkillValues[k]);
+      const baseSkills = [];
+      const unknownKeys = [];
+      rawMapping
+        .filter(k => !k.startsWith('special'))
+        .forEach(k => {
+          const mapped = resolveSkillKey(k);
+          if (mapped && allSkillKeys.includes(mapped)) {
+            if (!baseSkills.includes(mapped)) baseSkills.push(mapped);
+          } else {
+            unknownKeys.push(k);
+          }
+        });
+      if (unknownKeys.length > 0) {
+        // 控制台提示开发者（不会打扰用户界面）
+        console.warn('[职业技能映射] 以下技能key不存在或无法映射，已忽略: ', unknownKeys.join(', '));
+      }
+      // 可选特长技能池（包含全部技能，已是基础本职的禁用显示，便于查看全集）
+      let selectable = [];
+      if (specialCount > 0) {
+        selectable = allSkillKeys.slice();
+        // 排序：按中文名称（或 key）排序，便于查找
+        selectable.sort((a, b) => (skillTranslations[a] || a).localeCompare(skillTranslations[b] || b, 'zh-Hans-CN'));
+      }
+      setMainSkillSelectable(selectable);
+  // 自动修剪现有特长选择：排除已是基础本职的技能，且限制在候选池和上限内
+  let newSpecial = selectedSpecialSkills.filter(k => selectable.includes(k) && !baseSkills.includes(k));
+      if (newSpecial.length > specialCount) newSpecial = newSpecial.slice(0, specialCount);
+      setSelectedSpecialSkills(newSpecial);
+      // 重置点数 & 技能数值
+      setSkillAllocation({});
+      setSkillValues(cloneInitialSkills());
+      setMainSkills([...baseSkills, ...newSpecial]);
+    } else if (profession === '自定义职业' && customProfession) {
+      setMainSkills([]);
+      setMainSkillSelectable([]);
+      setSelectedSpecialSkills([]);
+      setSkillAllocation({});
+      setSkillValues(cloneInitialSkills());
+    } else {
+      setMainSkills([]);
+      setMainSkillSelectable([]);
+      setSelectedSpecialSkills([]);
+      setSkillAllocation({});
+      setSkillValues(cloneInitialSkills());
+    }
+  }, [profession, customProfession]);
+
+  // 监听selectedSpecialSkills变化，mainSkills实时更新
+  useEffect(() => {
+    if (profession && professionSkillMapping[profession]) {
+      const rawMapping = professionSkillMapping[profession];
+      const allSkillKeys = Object.keys(skillTranslations).filter(k => initialSkillValues[k]);
+      const baseSkills = [];
+      rawMapping
+        .filter(k => !k.startsWith('special'))
+        .forEach(k => {
+          const mapped = resolveSkillKey(k);
+          if (mapped && allSkillKeys.includes(mapped) && !baseSkills.includes(mapped)) baseSkills.push(mapped);
+        });
+      setMainSkills([...baseSkills, ...selectedSpecialSkills]);
+    }
+  }, [selectedSpecialSkills, profession]);
+
+  // 当 mainSkills 变化时，自动修正分配：
+  // - 变为非本职：清零其职业点（非本职不可用职业点）
+  useEffect(() => {
+    if (!skillAllocation) return;
+    const updated = { ...skillAllocation };
+    let changed = false;
+    const becameNonMain = [];
+    Object.keys(updated).forEach((key) => {
+      const isMain = mainSkills.includes(key);
+      const alloc = updated[key] || { professional: 0, interest: 0 };
+      if (!isMain && (alloc.professional || 0) > 0) {
+        updated[key] = { ...alloc, professional: 0 };
+        changed = true;
+        becameNonMain.push(key);
+      }
+    });
+    if (changed) {
+      setSkillAllocation(updated);
+      // 同步刷新技能当前值
+      const newSkillValues = cloneInitialSkills();
+      Object.keys(updated).forEach(key => {
+        const allocation = updated[key] || { professional: 0, interest: 0 };
+        const initialValue = newSkillValues[key]?.initial || 0;
+        const newVal = initialValue + (allocation.professional || 0) + (allocation.interest || 0);
+        if (newSkillValues[key]) newSkillValues[key].current = newVal;
+      });
+      setSkillValues(newSkillValues);
+      // 提示用户发生了自动纠正
+      if (becameNonMain.length) {
+        setStatusMessage({ type: 'info', message: `以下技能已变为非本职，已清零职业点：${becameNonMain.map(k => skillTranslations[k] || k).join('、')}` });
+      }
+      setTimeout(() => setStatusMessage({ type: '', message: '' }), 3000);
+    }
+  }, [mainSkills]);
+
+  return (
     <div className="new-person-container">
       <Sidebar />
       <h2>创建新角色</h2>
       
       {/* 中央大骰子动画 */}
       {showGiantDice && (
-        <div className="central-dice-overlay">
-          <div className="giant-dice d100">
-            <div className="dice-face">D100</div>
-            <div className="dice-dots">
-              <span>•</span><span>••</span><span>•••</span><span>••••</span><span>•••••</span>
-              <span>••••••</span><span>•••••••</span><span>••••••••</span><span>•••••••••</span><span>••••••••••</span>
-            </div>
-          </div>
+        <div className="central-dice-overlay" style={{background:'rgba(10,20,30,0.92)'}}>
+          <img src={touziGif} alt="骰子动画" style={{width: 120, height: 120, borderRadius: 20, boxShadow: '0 0 30px #00e0ff, 0 0 60px #0ff', border: '3px solid #00e0ff'}} />
         </div>
       )}
       
       <form onSubmit={handleSubmit}>
         <h3>基本信息</h3>
-        <div className="character-tables">
-          <table className="character-table">
+        <div className="character-tables" style={{marginBottom: 0}}>
+          <table className="character-table" style={{marginBottom: 0, borderRadius: 16, overflow: 'hidden'}}>
             <tbody>
-              <tr>
+              <tr style={{background: 'linear-gradient(90deg,#0f2027 0%,#2c5364 100%)'}}>
                 <th>姓名</th>
-                <td><input type="text" value={name} onChange={(e) => setName(e.target.value)} required /></td>
+                <td><input type="text" value={name} onChange={(e) => setName(e.target.value)} required style={{fontSize: 17, background: 'rgba(0,255,255,0.08)', color: '#0ff'}} /></td>
               </tr>
-              <tr>
+              <tr style={{background: 'linear-gradient(90deg,#232526 0%,#414345 100%)'}}>
                 <th>年龄</th>
-                <td><input type="text" value={age} onChange={(e) => setAge(e.target.value)} required /></td>
+                <td><input type="text" value={age} onChange={(e) => setAge(e.target.value)} required style={{fontSize: 17, background: 'rgba(0,255,255,0.08)', color: '#0ff'}} /></td>
               </tr>
-              <tr>
+              <tr style={{background: 'linear-gradient(90deg,#0f2027 0%,#2c5364 100%)'}}>
                 <th>职业</th>
-                <td><input type="text" value={profession} onChange={(e) => setProfession(e.target.value)} required /></td>
+                <td>
+                  <div style={{display:'flex',flexDirection:'column',width:'100%'}}>
+                    <div>
+                      <select
+                        value={profession}
+                        onChange={e => setProfession(e.target.value)}
+                        style={{ fontSize: 17, background: 'rgba(0,255,255,0.08)', color: '#0ff', width: profession==='自定义职业' ? '70%' : '100%' }}
+                      >
+                        {professionList.map(opt => (
+                          <option key={opt.value} value={opt.value}>{opt.label}</option>
+                        ))}
+                      </select>
+                      {profession === '自定义职业' && (
+                        <input
+                          type="text"
+                          value={customProfession}
+                          onChange={e => setCustomProfession(e.target.value)}
+                          placeholder="输入自定义职业"
+                          style={{ fontSize: 17, background: 'rgba(0,255,255,0.08)', color: '#0ff', marginLeft: 8, width: '28%' }}
+                        />
+                      )}
+                    </div>
+                    {profession && (mainSkills.length > 0 || (professionSkillMapping[profession]?.some(k => k.startsWith('special')))) && (
+                      <div className="main-skills-section parchment-box" style={{margin:'12px 0 4px',background:'#f5ecd7',borderRadius:14,boxShadow:'0 1px 6px #d2c7a3',padding:'10px 10px'}}>
+                        <div style={{color:'#1a4d1a',fontWeight:700,fontSize:16,marginBottom:6,letterSpacing:1}}>本职技能</div>
+                        <div style={{display:'flex',flexWrap:'wrap',gap:8,marginBottom:mainSkillSelectable.length>0?8:0}}>
+                          {mainSkills.map(skillKey => (
+                            <span key={skillKey} style={{display:'inline-flex',alignItems:'center',background:'#fff',borderRadius:8,padding:'4px 10px',color:'#1a4d1a',fontWeight:600,border:'1px solid #d2c7a3',fontSize:13}}>
+                              <input type="radio" checked disabled style={{marginRight:4,accentColor:'#1a4d1a'}} />
+                              {skillTranslations[skillKey] || skillKey}
+                            </span>
+                          ))}
+                        </div>
+                        {mainSkillSelectable.length > 0 && (
+                          <div style={{marginTop:4}}>
+                            <span style={{color:'#1a4d1a',fontWeight:600,fontSize:13}}>可额外选择特长（最多{professionSkillMapping[profession]?.filter(k=>k.startsWith('special')).length}项）:</span>
+                            <div style={{display:'flex',flexWrap:'wrap',gap:8,marginTop:6}}>
+                              {mainSkillSelectable.map(skillKey => {
+                                const isBaseMain = (() => {
+                                  const rawMapping = professionSkillMapping[profession] || [];
+                                  const allSkillKeys = Object.keys(skillTranslations).filter(k => initialSkillValues[k]);
+                                  const base = [];
+                                  rawMapping.filter(k=>!k.startsWith('special')).forEach(k=>{
+                                    const mapped = resolveSkillKey(k);
+                                    if (mapped && allSkillKeys.includes(mapped) && !base.includes(mapped)) base.push(mapped);
+                                  });
+                                  return base.includes(skillKey);
+                                })();
+                                const disabledByMax = selectedSpecialSkills.length >= (professionSkillMapping[profession]?.filter(k=>k.startsWith('special')).length || 0) && !selectedSpecialSkills.includes(skillKey);
+                                const disabled = isBaseMain || disabledByMax;
+                                return (
+                                <label key={skillKey} style={{display:'flex',alignItems:'center',background:'#fff',borderRadius:8,padding:'4px 8px',color: disabled?'#999':'#222',fontWeight:500,border:'1px solid #d2c7a3',fontSize:12, opacity: disabled?0.7:1}}>
+                                  <input
+                                    type="checkbox"
+                                    checked={selectedSpecialSkills.includes(skillKey)}
+                                    onChange={e => {
+                                      let newArr = [...selectedSpecialSkills];
+                                      const maxCount = professionSkillMapping[profession]?.filter(k=>k.startsWith('special')).length || 0;
+                                      if (e.target.checked) {
+                                        if (newArr.length < maxCount) {
+                                          newArr.push(skillKey);
+                                        } else {
+                                          // 反馈超过上限
+                                          setStatusMessage({ type: 'error', message: `最多可选择${maxCount}项特长` });
+                                          setTimeout(() => setStatusMessage({ type: '', message: '' }), 2000);
+                                        }
+                                      } else {
+                                        newArr = newArr.filter(k => k !== skillKey);
+                                      }
+                                      setSelectedSpecialSkills(newArr);
+                                    }}
+                                    disabled={disabled}
+                                    style={{marginRight:4,accentColor:'#1a4d1a'}}
+                                  />
+                                  {skillTranslations[skillKey] || skillKey}
+                                  {isBaseMain && (<span style={{marginLeft:6,color:'#1a4d1a',fontSize:11,fontWeight:600}}>（本职）</span>)}
+                                </label>
+                              )})}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </td>
               </tr>
-              <tr>
+              <tr style={{background: 'linear-gradient(90deg,#232526 0%,#414345 100%)'}}>
                 <th>性别</th>
-                <td><input type="text" value={gender} onChange={(e) => setGender(e.target.value)} required /></td>
+                <td><input type="text" value={gender} onChange={(e) => setGender(e.target.value)} required style={{fontSize: 17, background: 'rgba(0,255,255,0.08)', color: '#0ff'}} /></td>
               </tr>
-              <tr>
+              <tr style={{background: 'linear-gradient(90deg,#0f2027 0%,#2c5364 100%)'}}>
                 <th>现居地</th>
-                <td><input type="text" value={currentResidence} onChange={(e) => setCurrentResidence(e.target.value)} required /></td>
+                <td><input type="text" value={currentResidence} onChange={(e) => setCurrentResidence(e.target.value)} required style={{fontSize: 17, background: 'rgba(0,255,255,0.08)', color: '#0ff'}} /></td>
               </tr>
-              <tr>
+              <tr style={{background: 'linear-gradient(90deg,#232526 0%,#414345 100%)'}}>
                 <th>出生地</th>
-                <td><input type="text" value={birthplace} onChange={(e) => setBirthplace(e.target.value)} required /></td>
+                <td><input type="text" value={birthplace} onChange={(e) => setBirthplace(e.target.value)} required style={{fontSize: 17, background: 'rgba(0,255,255,0.08)', color: '#0ff'}} /></td>
               </tr>
             </tbody>
           </table>
@@ -697,253 +888,59 @@ const NewPerson = () => {
           })()}
           
           {/* 属性表格 - 每个属性单独投骰子 */}
-          <table className="character-table attributes-table">
+          <table className="character-table attributes-table" style={{marginTop: 0, borderRadius: 16, overflow: 'hidden'}}>
             <tbody>
-              <tr>
-                <th>力量</th>
-                <td className="attribute-cell">
-                  {attributesRolled.str ? (
-                    <div className="attribute-display">
-                      <span className="attribute-value">{str}</span>
+              {[
+                { key: 'str', label: '力量', value: str, rolling: rollingStates.str, rolled: attributesRolled.str },
+                { key: 'dex', label: '敏捷', value: dex, rolling: rollingStates.dex, rolled: attributesRolled.dex },
+                { key: 'int', label: '智力', value: int, rolling: rollingStates.int, rolled: attributesRolled.int },
+                { key: 'con', label: '体质', value: con, rolling: rollingStates.con, rolled: attributesRolled.con },
+                { key: 'app', label: '外貌', value: app, rolling: rollingStates.app, rolled: attributesRolled.app },
+                { key: 'pow', label: '意志', value: pow, rolling: rollingStates.pow, rolled: attributesRolled.pow },
+                { key: 'siz', label: '体型', value: siz, rolling: rollingStates.siz, rolled: attributesRolled.siz },
+                { key: 'edu', label: '教育', value: edu, rolling: rollingStates.edu, rolled: attributesRolled.edu },
+                { key: 'luck', label: '幸运值', value: luck, rolling: rollingStates.luck, rolled: attributesRolled.luck },
+              ].map((attr, idx) => (
+                <tr key={attr.key} style={{background: idx % 2 === 0 ? 'linear-gradient(90deg,#232526 0%,#0f2027 100%)' : 'linear-gradient(90deg,#232526 0%,#414345 100%)'}}>
+                  <th style={{color:'#0ff', fontWeight:700, fontSize:15}}>{attr.label}</th>
+                  <td className="attribute-cell" style={{padding:'8px 4px'}}>
+                    {attr.rolled ? (
+                      <div className="attribute-display" style={{gap:6}}>
+                        <span className="attribute-value" style={{fontSize:18, color:'#000607ff', background:'rgba(0,255,255,0.08)'}}>{attr.value}</span>
+                        <button 
+                          className="mini-dice-button" 
+                          style={{width:32, height:32, fontSize:13, background:'linear-gradient(135deg,#00e0ff,#00b894)', color:'#fff'}} 
+                          onClick={() => rollSingleAttribute(attr.key)}
+                          disabled={attr.rolling || totalRollCount >= 3}
+                          title={`剩余总重投次数: ${3 - totalRollCount}`}
+                        >
+                          {attr.rolling ? <img src={touziGif} alt="骰子" style={{width:20, height:20}} /> : '🔄'}
+                        </button>
+                      </div>
+                    ) : (
                       <button 
-                        className="mini-dice-button" 
-                        onClick={() => rollSingleAttribute('str')}
-                        disabled={rollingStates.str || totalRollCount >= 3}
-                        title={`剩余总重投次数: ${3 - totalRollCount}`}
+                        className="dice-button" 
+                        style={{width:40, height:40, fontSize:18, background:'linear-gradient(135deg,#00e0ff,#00b894)', color:'#fff'}} 
+                        onClick={() => rollSingleAttribute(attr.key)}
+                        disabled={attr.rolling}
                       >
-                        {rollingStates.str ? '🎲' : '🔄'}
+                        {attr.rolling ? <img src={touziGif} alt="骰子" style={{width:20, height:20}} /> : '🎲'}
                       </button>
-                    </div>
-                  ) : (
-                    <button 
-                      className="dice-button" 
-                      onClick={() => rollSingleAttribute('str')}
-                      disabled={rollingStates.str}
-                    >
-                      🎲
-                    </button>
-                  )}
-                </td>
+                    )}
+                  </td>
+                </tr>
+              ))}
+              <tr style={{background:'linear-gradient(90deg,#0f2027 0%,#2c5364 100%)'}}>
+                <th style={{color:'#0ff'}}>生命值</th>
+                <td><span className="derived-stat" style={{fontSize:16, color:'#00e0ff', background:'rgba(0,255,255,0.08)'}}>{hp}</span></td>
               </tr>
-              <tr>
-                <th>敏捷</th>
-                <td className="attribute-cell">
-                  {attributesRolled.dex ? (
-                    <div className="attribute-display">
-                      <span className="attribute-value">{dex}</span>
-                      <button 
-                        className="mini-dice-button" 
-                        onClick={() => rollSingleAttribute('dex')}
-                        disabled={rollingStates.dex || totalRollCount >= 3}
-                        title={`剩余总重投次数: ${3 - totalRollCount}`}
-                      >
-                        {rollingStates.dex ? '🎲' : '🔄'}
-                      </button>
-                    </div>
-                  ) : (
-                    <button 
-                      className="dice-button" 
-                      onClick={() => rollSingleAttribute('dex')}
-                      disabled={rollingStates.dex}
-                    >
-                      🎲
-                    </button>
-                  )}
-                </td>
+              <tr style={{background:'linear-gradient(90deg,#232526 0%,#414345 100%)'}}>
+                <th style={{color:'#0ff'}}>魔法值</th>
+                <td><span className="derived-stat" style={{fontSize:16, color:'#00e0ff', background:'rgba(0,255,255,0.08)'}}>{mp}</span></td>
               </tr>
-              <tr>
-                <th>智力</th>
-                <td className="attribute-cell">
-                  {attributesRolled.int ? (
-                    <div className="attribute-display">
-                      <span className="attribute-value">{int}</span>
-                      <button 
-                        className="mini-dice-button" 
-                        onClick={() => rollSingleAttribute('int')}
-                        disabled={rollingStates.int || totalRollCount >= 3}
-                        title={`剩余总重投次数: ${3 - totalRollCount}`}
-                      >
-                        {rollingStates.int ? '🎲' : '🔄'}
-                      </button>
-                    </div>
-                  ) : (
-                    <button 
-                      className="dice-button" 
-                      onClick={() => rollSingleAttribute('int')}
-                      disabled={rollingStates.int}
-                    >
-                      🎲
-                    </button>
-                  )}
-                </td>
-              </tr>
-              <tr>
-                <th>体质</th>
-                <td className="attribute-cell">
-                  {attributesRolled.con ? (
-                    <div className="attribute-display">
-                      <span className="attribute-value">{con}</span>
-                      <button 
-                        className="mini-dice-button" 
-                        onClick={() => rollSingleAttribute('con')}
-                        disabled={rollingStates.con || totalRollCount >= 3}
-                        title={`剩余总重投次数: ${3 - totalRollCount}`}
-                      >
-                        {rollingStates.con ? '🎲' : '🔄'}
-                      </button>
-                    </div>
-                  ) : (
-                    <button 
-                      className="dice-button" 
-                      onClick={() => rollSingleAttribute('con')}
-                      disabled={rollingStates.con}
-                    >
-                      🎲
-                    </button>
-                  )}
-                </td>
-              </tr>
-              <tr>
-                <th>外貌</th>
-                <td className="attribute-cell">
-                  {attributesRolled.app ? (
-                    <div className="attribute-display">
-                      <span className="attribute-value">{app}</span>
-                      <button 
-                        className="mini-dice-button" 
-                        onClick={() => rollSingleAttribute('app')}
-                        disabled={rollingStates.app || totalRollCount >= 3}
-                        title={`剩余总重投次数: ${3 - totalRollCount}`}
-                      >
-                        {rollingStates.app ? '🎲' : '🔄'}
-                      </button>
-                    </div>
-                  ) : (
-                    <button 
-                      className="dice-button" 
-                      onClick={() => rollSingleAttribute('app')}
-                      disabled={rollingStates.app}
-                    >
-                      🎲
-                    </button>
-                  )}
-                </td>
-              </tr>
-              <tr>
-                <th>意志</th>
-                <td className="attribute-cell">
-                  {attributesRolled.pow ? (
-                    <div className="attribute-display">
-                      <span className="attribute-value">{pow}</span>
-                      <button 
-                        className="mini-dice-button" 
-                        onClick={() => rollSingleAttribute('pow')}
-                        disabled={rollingStates.pow || totalRollCount >= 3}
-                        title={`剩余总重投次数: ${3 - totalRollCount}`}
-                      >
-                        {rollingStates.pow ? '🎲' : '🔄'}
-                      </button>
-                    </div>
-                  ) : (
-                    <button 
-                      className="dice-button" 
-                      onClick={() => rollSingleAttribute('pow')}
-                      disabled={rollingStates.pow}
-                    >
-                      🎲
-                    </button>
-                  )}
-                </td>
-              </tr>
-              <tr>
-                <th>体型</th>
-                <td className="attribute-cell">
-                  {attributesRolled.siz ? (
-                    <div className="attribute-display">
-                      <span className="attribute-value">{siz}</span>
-                      <button 
-                        className="mini-dice-button" 
-                        onClick={() => rollSingleAttribute('siz')}
-                        disabled={rollingStates.siz || totalRollCount >= 3}
-                        title={`剩余总重投次数: ${3 - totalRollCount}`}
-                      >
-                        {rollingStates.siz ? '🎲' : '🔄'}
-                      </button>
-                    </div>
-                  ) : (
-                    <button 
-                      className="dice-button" 
-                      onClick={() => rollSingleAttribute('siz')}
-                      disabled={rollingStates.siz}
-                    >
-                      🎲
-                    </button>
-                  )}
-                </td>
-              </tr>
-              <tr>
-                <th>教育</th>
-                <td className="attribute-cell">
-                  {attributesRolled.edu ? (
-                    <div className="attribute-display">
-                      <span className="attribute-value">{edu}</span>
-                      <button 
-                        className="mini-dice-button" 
-                        onClick={() => rollSingleAttribute('edu')}
-                        disabled={rollingStates.edu || totalRollCount >= 3}
-                        title={`剩余总重投次数: ${3 - totalRollCount}`}
-                      >
-                        {rollingStates.edu ? '🎲' : '🔄'}
-                      </button>
-                    </div>
-                  ) : (
-                    <button 
-                      className="dice-button" 
-                      onClick={() => rollSingleAttribute('edu')}
-                      disabled={rollingStates.edu}
-                    >
-                      🎲
-                    </button>
-                  )}
-                </td>
-              </tr>
-              <tr>
-                <th>幸运值</th>
-                <td className="attribute-cell">
-                  {attributesRolled.luck ? (
-                    <div className="attribute-display">
-                      <span className="attribute-value">{luck}</span>
-                      <button 
-                        className="mini-dice-button" 
-                        onClick={() => rollSingleAttribute('luck')}
-                        disabled={rollingStates.luck || totalRollCount >= 3}
-                        title={`剩余总重投次数: ${3 - totalRollCount}`}
-                      >
-                        {rollingStates.luck ? '🎲' : '🔄'}
-                      </button>
-                    </div>
-                  ) : (
-                    <button 
-                      className="dice-button" 
-                      onClick={() => rollSingleAttribute('luck')}
-                      disabled={rollingStates.luck}
-                    >
-                      🎲
-                    </button>
-                  )}
-                </td>
-              </tr>
-              <tr>
-                <th>生命值</th>
-                <td><span className="derived-stat">{hp}</span></td>
-              </tr>
-              <tr>
-                <th>魔法值</th>
-                <td><span className="derived-stat">{mp}</span></td>
-              </tr>
-              <tr>
-                <th>理智值</th>
-                <td><span className="derived-stat">{san}</span></td>
+              <tr style={{background:'linear-gradient(90deg,#0f2027 0%,#2c5364 100%)'}}>
+                <th style={{color:'#0ff'}}>理智值</th>
+                <td><span className="derived-stat" style={{fontSize:16, color:'#00e0ff', background:'rgba(0,255,255,0.08)'}}>{san}</span></td>
               </tr>
             </tbody>
           </table>
@@ -975,168 +972,71 @@ const NewPerson = () => {
               </button>
             </div>
           </div>
+          <div style={{color:'#0ff',fontSize:13,marginTop:4}}>
+            本职技能可使用职业点或兴趣点；非本职技能只能使用兴趣点。
+          </div>
         </div>
         
         <h3>技能列表</h3>
         
-        {/* 桌面端表格布局 */}
-        <table className="skills-table">
-          <thead>
-            <tr>
-              <th>技能名称</th>
-              <th>初始值</th>
-              <th>最终值</th>
-              <th>职业点</th>
-              <th>兴趣点</th>
-              <th>操作</th>
-            </tr>
-          </thead>
-          <tbody>
-            {Object.keys(skillTranslations).map((skillKey) => {
-              const allocation = skillAllocation[skillKey] || { professional: 0, interest: 0 };
-              const initialValue = skillValues[skillKey]?.initial || 0;
-              const finalValue = initialValue + allocation.professional + allocation.interest;
-              
-              return (
-                <tr key={skillKey}>
-                  <td className="skill-name">{skillTranslations[skillKey]}</td>
-                  <td><span className="skill-initial">{initialValue}</span></td>
-                  <td><span className="skill-final">{finalValue}</span></td>
-                  <td>
-                    <div className="allocation-input-group">
-                      <input 
-                        type="number" 
-                        className="allocation-input professional"
-                        value={allocation.professional || 0}
-                        onChange={(e) => handleSkillAllocation(skillKey, 'professional', e.target.value)}
-                        min="0"
-                        max="80"
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') {
-                            e.preventDefault();
-                          }
-                        }}
-                      />
-                      <div className="quick-buttons">
-                        <button type="button" onClick={() => handleQuickAllocation(skillKey, 'professional', 5)}>+5</button>
-                        <button type="button" onClick={() => handleQuickAllocation(skillKey, 'professional', 10)}>+10</button>
-                      </div>
-                    </div>
-                  </td>
-                  <td>
-                    <div className="allocation-input-group">
-                      <input 
-                        type="number" 
-                        className="allocation-input interest"
-                        value={allocation.interest || 0}
-                        onChange={(e) => handleSkillAllocation(skillKey, 'interest', e.target.value)}
-                        min="0"
-                        max="70"
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') {
-                            e.preventDefault();
-                          }
-                        }}
-                      />
-                      <div className="quick-buttons">
-                        <button type="button" onClick={() => handleQuickAllocation(skillKey, 'interest', 5)}>+5</button>
-                        <button type="button" onClick={() => handleQuickAllocation(skillKey, 'interest', 10)}>+10</button>
-                      </div>
-                    </div>
-                  </td>
-                  <td>
-                    <button 
-                      type="button" 
-                      className="reset-skill-btn"
-                      onClick={() => resetSkillAllocation(skillKey)}
-                      title="重置此技能"
-                    >
-                      🔄
-                    </button>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-        
-        {/* 移动端卡片布局 */}
-        <div className="skills-container">
+        {/* 羊皮纸风格技能列表，单列适配移动端，每行一个技能，主技能有单选框标识，黑/深绿字色 */}
+        <div className="skills-container parchment-skill-list" style={{background:'#f5ecd7', borderRadius:18, boxShadow:'0 2px 12px #d2c7a3', padding:'18px 8px', margin:'16px 0', display:'flex', flexDirection:'column', gap:10}}>
           {Object.keys(skillTranslations).map((skillKey) => {
             const allocation = skillAllocation[skillKey] || { professional: 0, interest: 0 };
             const initialValue = skillValues[skillKey]?.initial || 0;
             const finalValue = initialValue + allocation.professional + allocation.interest;
-            
+            const isMain = mainSkills.includes(skillKey);
             return (
-              <div key={skillKey} className="skill-card-enhanced">
-                <div className="skill-card-header">
-                  <div className="skill-name">{skillTranslations[skillKey]}</div>
-                  <div className="skill-values">
-                    <span className="skill-initial">初始: {initialValue}</span>
-                    <span className="skill-final">最终: {finalValue}</span>
-                  </div>
-                  <button 
-                    type="button" 
-                    className="reset-skill-btn mobile"
-                    onClick={() => resetSkillAllocation(skillKey)}
-                    title="重置此技能"
-                  >
-                    🔄
-                  </button>
-                </div>
-                <div className="skill-allocation">
-                  <div className="allocation-row">
-                    <label className="allocation-label">职业点:</label>
-                    <div className="allocation-input-group">
-                      <input 
-                        type="number" 
-                        className="allocation-input professional"
-                        value={allocation.professional || 0}
-                        onChange={(e) => handleSkillAllocation(skillKey, 'professional', e.target.value)}
-                        min="0"
-                        max="80"
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') {
-                            e.preventDefault();
-                          }
-                        }}
-                      />
-                      <div className="quick-buttons">
-                        <button type="button" onClick={() => handleQuickAllocation(skillKey, 'professional', 5)}>+5</button>
-                        <button type="button" onClick={() => handleQuickAllocation(skillKey, 'professional', 10)}>+10</button>
-                        <button type="button" onClick={() => handleQuickAllocation(skillKey, 'professional', 20)}>+20</button>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="allocation-row">
-                    <label className="allocation-label">兴趣点:</label>
-                    <div className="allocation-input-group">
-                      <input 
-                        type="number" 
-                        className="allocation-input interest"
-                        value={allocation.interest || 0}
-                        onChange={(e) => handleSkillAllocation(skillKey, 'interest', e.target.value)}
-                        min="0"
-                        max="70"
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') {
-                            e.preventDefault();
-                          }
-                        }}
-                      />
-                      <div className="quick-buttons">
-                        <button type="button" onClick={() => handleQuickAllocation(skillKey, 'interest', 5)}>+5</button>
-                        <button type="button" onClick={() => handleQuickAllocation(skillKey, 'interest', 10)}>+10</button>
-                        <button type="button" onClick={() => handleQuickAllocation(skillKey, 'interest', 20)}>+20</button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+              <div key={skillKey} className="parchment-skill-row" style={{display:'flex',alignItems:'center',background:'#fff',borderRadius:12,padding:'8px 6px',boxShadow:'0 1px 4px #e0e6ed',marginBottom:2,flexWrap:'wrap',border:'1px solid #d2c7a3'}}>
+                {/* 单选框标识职业技能 */}
+                <input
+                  type="radio"
+                  checked={isMain}
+                  readOnly
+                  style={{marginRight:8,accentColor:'#1a4d1a',width:18,height:18}}
+                  tabIndex={-1}
+                  aria-label={isMain ? '职业技能' : '非职业技能'}
+                />
+                <span style={{fontWeight:700,fontSize:15,color:isMain?'#1a4d1a':'#222',minWidth:90,flex:'1 1 120px'}}>{skillTranslations[skillKey]}</span>
+                <span style={{color:'#222',marginLeft:8,fontSize:13}}>初始:<b>{initialValue}</b></span>
+                <span style={{color:'#222',marginLeft:8,fontSize:13}}>最终:<b>{finalValue}</b></span>
+                <label style={{fontSize:13,color:'#1a4d1a',marginLeft:8}}>职业点</label>
+                <input
+                  type="number"
+                  className="allocation-input professional"
+                  value={allocation.professional || 0}
+                  onChange={(e) => handleSkillAllocation(skillKey, 'professional', e.target.value)}
+                  min="0"
+                  max="80"
+                  disabled={!isMain}
+                  style={{background:!isMain?'#f5ecd7':'#fff',color:!isMain?'#bbb':'#1a4d1a',border:'1px solid #d2c7a3',borderRadius:6,padding:'2px 8px',width:50,marginLeft:4}}
+                  onKeyDown={(e) => { if (e.key === 'Enter') e.preventDefault(); }}
+                />
+                <label style={{fontSize:13,color:'#222',marginLeft:8}}>兴趣点</label>
+                <input
+                  type="number"
+                  className="allocation-input interest"
+                  value={allocation.interest || 0}
+                  onChange={(e) => handleSkillAllocation(skillKey, 'interest', e.target.value)}
+                  min="0"
+                  max="70"
+                  disabled={false}
+                  style={{background:isMain?'#f5ecd7':'#fff',color:isMain?'#bbb':'#1a4d1a',border:'1px solid #d2c7a3',borderRadius:6,padding:'2px 8px',width:50,marginLeft:4}}
+                  onKeyDown={(e) => { if (e.key === 'Enter') e.preventDefault(); }}
+                />
+                <button
+                  type="button"
+                  className="reset-skill-btn"
+                  onClick={() => resetSkillAllocation(skillKey)}
+                  title="重置此技能"
+                  style={{marginLeft:8,background:'#f5ecd7',border:'none',borderRadius:6,padding:'2px 8px',color:'#888',cursor:'pointer'}}
+                >
+                  🔄
+                </button>
               </div>
             );
           })}
         </div>
-        
         <button type="button" onClick={handleAddSkill}>
           添加技能
         </button>
