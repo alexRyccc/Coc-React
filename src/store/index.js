@@ -43,6 +43,17 @@ const initialState = {
   characters: [],
   isCreatingCharacter: false,
   createCharacterError: null,
+  // jihua module state
+  travelPlans: [],
+  travelPlansLoading: false,
+  travelPlansError: null,
+  currentPlan: null,
+  currentPlanLoading: false,
+  currentPlanError: null,
+  planSaving: false,
+  planSaveError: null,
+  planDeleting: false,
+  planDeleteError: null,
 };
 
 // 加载持久化状态
@@ -93,6 +104,34 @@ function reducer(state = preloadedState, action) {
         isCreatingCharacter: false, 
         createCharacterError: action.error 
       };
+    // jihua reducers
+    case 'TRAVEL_PLANS_FETCH_REQUESTING':
+      return { ...state, travelPlansLoading: true, travelPlansError: null };
+    case 'TRAVEL_PLANS_FETCH_SUCCESS':
+      return { ...state, travelPlansLoading: false, travelPlans: action.payload || [], travelPlansError: null };
+    case 'TRAVEL_PLANS_FETCH_FAILURE':
+      return { ...state, travelPlansLoading: false, travelPlansError: action.error };
+
+    case 'TRAVEL_PLAN_FETCH_REQUESTING':
+      return { ...state, currentPlanLoading: true, currentPlanError: null };
+    case 'TRAVEL_PLAN_FETCH_SUCCESS':
+      return { ...state, currentPlanLoading: false, currentPlan: action.payload, currentPlanError: null };
+    case 'TRAVEL_PLAN_FETCH_FAILURE':
+      return { ...state, currentPlanLoading: false, currentPlanError: action.error };
+
+    case 'TRAVEL_PLAN_SAVE_REQUESTING':
+      return { ...state, planSaving: true, planSaveError: null };
+    case 'TRAVEL_PLAN_SAVE_SUCCESS':
+      return { ...state, planSaving: false, currentPlan: action.payload, planSaveError: null };
+    case 'TRAVEL_PLAN_SAVE_FAILURE':
+      return { ...state, planSaving: false, planSaveError: action.error };
+
+    case 'TRAVEL_PLAN_DELETE_REQUESTING':
+      return { ...state, planDeleting: true, planDeleteError: null };
+    case 'TRAVEL_PLAN_DELETE_SUCCESS':
+      return { ...state, planDeleting: false, currentPlan: null };
+    case 'TRAVEL_PLAN_DELETE_FAILURE':
+      return { ...state, planDeleting: false, planDeleteError: action.error };
     default:
       return state;
   }

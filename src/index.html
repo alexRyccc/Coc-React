@@ -2,11 +2,26 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>my react demo</title>
 </head>
 <body>
 <div id="app"></div>
+<script>
+    // 可选：运行时地图配置示例（按需修改或删除）
+    window.CONFIG = window.CONFIG || {
+        // 自定义瓦片源（留空则不显示“自定义瓦片”选项）
+        // MAP_TILE_URL: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+        // MAP_ATTRIBUTION: '© OpenStreetMap contributors',
+        // MAP_SUBDOMAINS: ['a','b','c'],
+        // 初始缩放级别（建议 10 或 11）
+        MAP_INITIAL_ZOOM: 11,
+        // 可选：默认瓦片源键（可选值：'gaode' | 'tianditu_vec' | 'tianditu_img' | 'esri_street' | 'esri_sat' | 'osm' | 'geoq' | 'custom'）
+        // DEFAULT_TILE_KEY: 'gaode',
+        // 可选：天地图开发 token，若设置则可在“瓦片源”中选择天地图矢量/影像（不设置则不会显示对应选项）
+        // TIANDITU_TOKEN: 'your-tianditu-token-here',
+    };
+</script>
 </body>
 </html>

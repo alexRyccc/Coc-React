@@ -1,5 +1,6 @@
-import { takeLatest, call, put, select } from 'redux-saga/effects';
+import { takeLatest, call, put, select, all } from 'redux-saga/effects';
 import axios from 'axios';
+import jihuaSaga from '../pages/jihua/saga';
 
 // API基础URL配置
 const API_BASE_URL = process.env.NODE_ENV === 'production' ? '/api' : 'http://localhost:8082';
@@ -205,9 +206,12 @@ function* createCharacterSaga(action) {
 }
 
 export default function* rootSaga() {
-  yield takeLatest('LOGIN_REQUEST', loginSaga);
-  yield takeLatest('REGISTER_REQUEST', registerSaga);
-  yield takeLatest('FORGOT_PASSWORD_REQUEST', forgotPasswordSaga);
-  yield takeLatest('FETCH_CHARACTERS', fetchCharactersSaga);
-  yield takeLatest('CREATE_CHARACTER_REQUEST', createCharacterSaga);
+  yield all([
+    takeLatest('LOGIN_REQUEST', loginSaga),
+    takeLatest('REGISTER_REQUEST', registerSaga),
+    takeLatest('FORGOT_PASSWORD_REQUEST', forgotPasswordSaga),
+    takeLatest('FETCH_CHARACTERS', fetchCharactersSaga),
+    takeLatest('CREATE_CHARACTER_REQUEST', createCharacterSaga),
+    jihuaSaga(),
+  ]);
 }
