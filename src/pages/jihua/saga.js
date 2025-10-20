@@ -2,7 +2,7 @@ import { takeLatest, call, put } from 'redux-saga/effects';
 import axios from 'axios';
 
 // Keep same convention as existing sagas
-const API_BASE_URL = process.env.NODE_ENV === 'production' ? '/api' : 'http://localhost:8082/api';
+const API_BASE_URL = process.env.NODE_ENV === 'production' ? 'http://47.104.133.111/api' : 'http://localhost:8082';
 
 // API calls
 const listPlansApi = () => axios.get(`${API_BASE_URL}/travel-plans`);
